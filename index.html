@@ -9,6 +9,9 @@
   <title>GREECE • 8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="manifest" href="manifest.json">
+  <!-- Leaflet per la cartina Cibo -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
@@ -49,9 +52,15 @@
             <div class="text-[10px] text-slate-500 -mt-1">CASALINGO • VACANZIERO</div>
           </div>
         </div>
-        <button onclick="showProgress()" class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-slate-900 border border-slate-700">
-          <span>📊</span> <span class="font-medium">Progresso</span>
-        </button>
+        <div class="flex items-center gap-x-2">
+          <button onclick="showFoodSection()" 
+                  class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-emerald-900/60 border border-emerald-700 text-emerald-300 font-medium">
+            <span>🍽️</span> <span>Cibo</span>
+          </button>
+          <button onclick="showProgress()" class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-slate-900 border border-slate-700">
+            <span>📊</span> <span class="font-medium">Progresso</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -85,6 +94,98 @@
         <div class="w-9"></div>
       </div>
       <div class="flex-1 overflow-auto px-4 pt-3 pb-20" id="detail-content"></div>
+    </div>
+  </div>
+
+  <!-- CIBO & FITNESS VIEW -->
+  <div id="food-view" class="hidden fixed inset-0 z-[65] bg-slate-950">
+    <div class="max-w-screen-md mx-auto h-full flex flex-col">
+      <!-- Header -->
+      <div class="sticky top-0 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 px-4 h-14 flex items-center justify-between z-10">
+        <button onclick="closeFoodSection()" class="text-emerald-400 flex items-center gap-1 text-sm font-medium">← Chiudi</button>
+        <div class="font-semibold text-lg tracking-tight">Cibo & Fitness 🇬🇷</div>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <!-- Map -->
+        <div class="px-4 pt-4">
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-sm font-semibold text-emerald-300">Cartina - Dove mangiare da locali</div>
+            <div class="flex gap-1 text-xs">
+              <button onclick="filterMap('all')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300" id="map-all">Tutti</button>
+              <button onclick="filterMap('athens')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300" id="map-athens">Atene</button>
+              <button onclick="filterMap('spetses')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300" id="map-spetses">Spetses</button>
+            </div>
+          </div>
+          <div id="food-map" class="w-full h-64 rounded-2xl border border-slate-700 overflow-hidden"></div>
+          <div class="text-[10px] text-slate-500 mt-1.5 px-1">Tocca i pin per dettagli. Posti scelti dove mangiano i greci, non i turisti.</div>
+        </div>
+
+        <!-- Piatti Tipici -->
+        <div class="px-4 pt-6">
+          <div class="text-sm font-semibold text-emerald-300 mb-3">Piatti Tipici (con occhio al training)</div>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Gemista</div>
+              <div class="text-xs text-slate-400">Verdure ripiene di riso e erbe. Leggero e nutriente.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Griglia mista / Souvlaki</div>
+              <div class="text-xs text-slate-400">Ottimo post-allenamento (proteine). Chiedi senza patatine.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Horta (Verdure selvatiche)</div>
+              <div class="text-xs text-slate-400">Cotte al vapore con olio e limone. Micro-nutrienti top.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Psari fresco (pesce alla brace)</div>
+              <div class="text-xs text-slate-400">Ottima fonte di omega-3. Ideale dopo giorni di allenamento.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Gigantes</div>
+              <div class="text-xs text-slate-400">Fagioli grandi al sugo. Proteine vegetali + fibre.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Tzatziki + Melitzanosalata</div>
+              <div class="text-xs text-slate-400">Meze perfetti con verdure e pita (o senza).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bevande -->
+        <div class="px-4 pt-6">
+          <div class="text-sm font-semibold text-emerald-300 mb-3">Bevande</div>
+          <div class="space-y-2 text-sm">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Retsina</div>
+              <div class="text-xs text-slate-400">Vino greco resinato. Fresco, bevi con moderazione (è alcolico).</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Frappé o Freddo Espresso</div>
+              <div class="text-xs text-slate-400">Classico estivo. Versione senza zucchero se vuoi stare leggero.</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Acqua + Limone</div>
+              <div class="text-xs text-slate-400">La bevanda più intelligente quando fa caldo e ti alleni.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Street Food -->
+        <div class="px-4 pt-6 pb-8">
+          <div class="text-sm font-semibold text-emerald-300 mb-3">Street Food & Opzioni Veloci</div>
+          <div class="text-sm bg-slate-900 border border-slate-700 rounded-2xl p-4">
+            <ul class="space-y-1.5 text-slate-300">
+              <li>• <strong>Souvlaki / Gyro</strong> — prendi solo carne + verdura, salta le patatine</li>
+              <li>• <strong>Tiropita / Spanakopita</strong> — sfoglia con formaggio o spinaci (porzione piccola)</li>
+              <li>• <strong>Frutta di stagione</strong> dal mercato o fruttivendolo (anguria, pesche, fichi)</li>
+              <li>• <strong>Yogurt greco con miele e noci</strong> — ottimo post-workout</li>
+            </ul>
+            <div class="text-[11px] text-emerald-400 mt-3">Regola d'oro: ordina quello che mangerebbe una nonna greca.</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -599,6 +700,76 @@
       document.body.appendChild(m)
     }
 
+    // ==================== CIBO & FITNESS ====================
+    let foodMap = null
+    let foodMarkers = []
+
+    const foodSpots = [
+      // Spetses
+      {id:1, name:"To Pachni", lat:37.25, lng:23.15, city:"spetses", desc:"Carni alla brace eccellenti. Posto rustico frequentatissimo dai locali e famiglie greche. Fuori dal circuito turistico.", type:"carne"},
+      {id:2, name:"Akrogialia", lat:37.27, lng:23.14, city:"spetses", desc:"Taverna sulla spiaggia a Kounoupitsa. Pesce e meze semplici. 'Fai come i locali' è la frase che senti di più qui.", type:"pesce"},
+      {id:3, name:"Patralis", lat:37.268, lng:23.142, city:"spetses", desc:"Storica dal 1935. Pesce freschissimo, uno dei posti più rispettati dai greci che hanno casa sull'isola.", type:"pesce"},
+      {id:4, name:"Tarsanas", lat:37.262, lng:23.155, city:"spetses", desc:"Vecchio porto (Palia Limani). Dentro un cantiere navale. Ottimo pesce, atmosfera unica.", type:"pesce"},
+      // Athens
+      {id:5, name:"To Kati Allo", lat:37.968, lng:23.727, city:"athens", desc:"Koukaki. Cucina della nonna senza menu. Uno dei posti più autentici di Atene in questo momento.", type:"classico"},
+      {id:6, name:"Karavitis", lat:37.968, lng:23.742, city:"athens", desc:"Pangrati. Vecchia taverna storica con carni alla brace e atmosfera ateniese vera.", type:"carne"},
+      {id:7, name:"Diporto", lat:37.978, lng:23.725, city:"athens", desc:"Seminterrato storico dal 1800 vicino al mercato. Esperienza molto locale, piatti semplici.", type:"classico"},
+    ]
+
+    function showFoodSection() {
+      document.getElementById('food-view').classList.remove('hidden')
+      document.getElementById('food-view').classList.add('flex', 'flex-col')
+
+      // Inizializza la mappa solo la prima volta
+      if (!foodMap) {
+        setTimeout(initFoodMap, 80)
+      }
+    }
+
+    function closeFoodSection() {
+      document.getElementById('food-view').classList.remove('flex', 'flex-col')
+      document.getElementById('food-view').classList.add('hidden')
+    }
+
+    function initFoodMap() {
+      foodMap = L.map('food-map', { zoomControl: false }).setView([37.6, 23.4], 8)
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        className: 'map-tiles'
+      }).addTo(foodMap)
+
+      // Aggiungi marker
+      foodSpots.forEach(spot => {
+        const marker = L.marker([spot.lat, spot.lng]).addTo(foodMap)
+        marker.bindPopup(`<strong>${spot.name}</strong><br><span class="text-xs">${spot.desc}</span>`, { maxWidth: 260 })
+        marker.spotData = spot
+        foodMarkers.push(marker)
+      })
+    }
+
+    function filterMap(filter) {
+      // Reset active styles
+      document.getElementById('map-all').classList.remove('bg-emerald-600', 'text-white')
+      document.getElementById('map-athens').classList.remove('bg-emerald-600', 'text-white')
+      document.getElementById('map-spetses').classList.remove('bg-emerald-600', 'text-white')
+
+      if (filter === 'all') {
+        document.getElementById('map-all').classList.add('bg-emerald-600', 'text-white')
+        foodMarkers.forEach(m => m.addTo(foodMap))
+      } else {
+        document.getElementById('map-' + filter).classList.add('bg-emerald-600', 'text-white')
+        foodMarkers.forEach(m => {
+          if (m.spotData.city === filter) {
+            m.addTo(foodMap)
+          } else {
+            foodMap.removeLayer(m)
+          }
+        })
+      }
+    }
+
+    // ==================== INIT ====================
     function init(){
       initTailwind()
       renderDays()
