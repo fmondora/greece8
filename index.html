@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0F172A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>GREECE • 8</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg: #0F172A;
+      --card: #1E2937;
+      --card2: #334155;
+      --accent: #0EA5E9;
+      --accent-dark: #0284C8;
+      --text: #E2E8F0;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --success-dark: #059669;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .font-display {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .max-w-screen-md {
+      max-width: 768px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .pt-6 { padding-top: 1.5rem; }
+    .pb-2 { padding-bottom: 0.5rem; }
+    .pt-5 { padding-top: 1.25rem; }
+    .pb-12 { padding-bottom: 3rem; }
+
+    .sticky {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .bg-slate-950 { background: #0F172A; }
+    .bg-slate-900 { background: #1E2937; }
+    .bg-slate-800 { background: #334155; }
+    .bg-slate-700 { background: #475569; }
+
+    .text-slate-200 { color: #E2E8F0; }
+    .text-slate-400 { color: #94A3B8; }
+    .text-slate-500 { color: #64748B; }
+    .text-sky-400 { color: #38BDF8; }
+    .text-sky-300 { color: #7DD3FC; }
+    .text-emerald-400 { color: #34D399; }
+
+    .border-slate-800 { border-color: #1E2937; }
+    .border-slate-700 { border-color: #334155; }
+
+    .grid { display: grid; }
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .gap-3 { gap: 0.75rem; }
+
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-x-2 { gap: 0.5rem; }
+    .gap-x-3 { gap: 0.75rem; }
+
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-3xl { border-radius: 1.5rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    .p-4 { padding: 1rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-6xl { font-size: 3.75rem; }
+    .text-7xl { font-size: 4.5rem; }
+
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+
+    .tracking-tighter { letter-spacing: -0.03em; }
+    .tracking-widest { letter-spacing: 0.1em; }
+
+    .text-center { text-align: center; }
+
+    .min-h-screen { min-height: 100vh; }
+
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+
+    .day-card {
+      background: #1E2937;
+      border: 1px solid #334155;
+      border-radius: 1.5rem;
+      padding: 1rem;
+      transition: transform 0.15s ease, border-color 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .day-card:active {
+      transform: scale(0.985);
+      background: #334155;
+    }
+
+    .section-header {
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: #334155;
+      color: #CBD5E1;
+    }
+
+    .exercise-row {
+      display: flex;
+      gap: 12px;
+      padding: 10px 4px;
+      border-bottom: 1px solid #334155;
+      align-items: flex-start;
+      transition: background 0.1s ease;
+    }
+    .exercise-row:last-child {
+      border-bottom: none;
+    }
+    .exercise-row:active {
+      background: #334155;
+    }
+
+    .exercise-desc {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease;
+      color: #94A3B8;
+      font-size: 14px;
+      padding-right: 4px;
+    }
+    .exercise-desc.open {
+      max-height: 220px;
+    }
+
+    .big-timer {
+      font-size: 68px;
+      line-height: 1;
+      font-weight: 800;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: -4px;
+      color: white;
+    }
+
+    .wod-badge {
+      font-size: 10px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .timer-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      border-radius: 1rem;
+      font-weight: 700;
+      transition: transform 0.1s ease, background 0.1s ease;
+      touch-action: manipulation;
+      border: none;
+      cursor: pointer;
+    }
+    .timer-btn:active {
+      transform: scale(0.96);
+    }
+
+    .greek-accent {
+      background: linear-gradient(135deg, #0EA5E9, #0284C8);
+      color: white;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E2937;
+      border: 1px solid #334155;
+      color: #E2E8F0;
+      font-size: 14px;
+      padding: 10px 18px;
+      border-radius: 14px;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+      z-index: 9999;
+    }
+
+    .card {
+      background: #1E2937;
+      border: 1px solid #334155;
+      border-radius: 1.5rem;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #0F172A;
+      z-index: 60;
+    }
+
+    .timer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(12px);
+      z-index: 70;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .timer-overlay.show {
+      display: flex;
+    }
+
+    .stat-number {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen pb-12">
+
+  <!-- HEADER -->
+  <div class="sticky top-0 z-50" style="background: rgba(15,23,42,0.96); border-bottom: 1px solid #1E2937; backdrop-filter: blur(20px);">
+    <div class="max-w-screen-md mx-auto px-4">
+      <div class="flex items-center justify-between" style="height: 56px;">
+        <div class="flex items-center gap-x-3">
+          <div style="width:36px;height:36px;border-radius:14px;background:linear-gradient(135deg,#0EA5E9,#0284C8);display:flex;align-items:center;justify-content:center;">
+            <span style="color:white;font-weight:800;font-size:22px;letter-spacing:-1px;">G8</span>
+          </div>
+          <div>
+            <div style="font-size:24px;font-weight:700;letter-spacing:-0.03em;">GREECE<span style="color:#38BDF8;">8</span></div>
+            <div style="font-size:10px;color:#64748B;margin-top:-2px;">CASALINGO • VACANZIERO</div>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-x-2">
+          <button onclick="showProgress()" 
+                  style="display:flex;align-items:center;gap:6px;padding:6px 12px;font-size:12px;border-radius:14px;background:#1E2937;border:1px solid #334155;color:#E2E8F0;">
+            <span>📊</span>
+            <span style="font-weight:600;">Progresso</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="max-w-screen-md mx-auto px-4 pt-6 pb-2">
+    <div class="text-center">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;background:#1E2937;border:1px solid #334155;font-size:11px;letter-spacing:0.5px;margin-bottom:12px;">
+        <div style="width:6px;height:6px;background:#34D399;border-radius:50%;"></div>
+        8 SESSIONI • 30-40 MIN
+      </div>
+      <h1 style="font-size:32px;font-weight:700;letter-spacing:-0.03em;margin:0;">Allenati ovunque.</h1>
+      <p style="color:#94A3B8;margin-top:6px;font-size:15px;">Corpo libero. Senza scuse. Anche in vacanza.</p>
+    </div>
+  </div>
+
+  <!-- GIORNI -->
+  <div class="max-w-screen-md mx-auto px-4 pt-5">
+    <div class="grid grid-cols-2 gap-3" id="days-grid"></div>
+  </div>
+
+  <div class="max-w-screen-md mx-auto px-4 pt-8">
+    <div style="text-align:center;font-size:11px;color:#64748B;line-height:1.4;">
+      Tocca un giorno per vedere gli esercizi.<br>
+      I timer funzionano completamente offline.
+    </div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div id="detail-view" class="hidden modal">
+    <div class="max-w-screen-md mx-auto h-full flex flex-col">
+      <div style="position:sticky;top:0;background:#0F172A;border-bottom:1px solid #1E2937;padding:0 16px;z-index:10;">
+        <div class="flex items-center justify-between" style="height:56px;">
+          <button onclick="closeDetail()" style="display:flex;align-items:center;gap:6px;color:#38BDF8;font-weight:600;font-size:14px;">
+            ← Indietro
+          </button>
+          <div id="detail-header" style="font-weight:700;font-size:18px;"></div>
+          <div style="width:36px;"></div>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-4 pt-3 pb-24" id="detail-content"></div>
+    </div>
+  </div>
+
+  <!-- TIMER OVERLAY -->
+  <div id="timer-overlay" class="timer-overlay">
+    <div style="width:100%;max-width:420px;">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <div id="timer-title" style="font-weight:700;font-size:20px;color:#7DD3FC;"></div>
+        <button onclick="closeTimer()" style="background:#1E2937;border:1px solid #334155;color:#94A3B8;padding:6px 14px;font-size:13px;border-radius:10px;">CHIUDI</button>
+      </div>
+
+      <div class="card" style="padding:24px;">
+        <div style="display:flex;justify-content:center;">
+          <div id="timer-display" class="big-timer">20:00</div>
+        </div>
+
+        <div id="timer-phase" style="margin-top:8px;text-align:center;font-size:22px;font-weight:700;color:#38BDF8;min-height:28px;"></div>
+        <div id="timer-sub" style="text-align:center;font-size:13px;color:#94A3B8;margin-top:4px;min-height:18px;"></div>
+
+        <div id="timer-counters" class="hidden" style="margin-top:24px;">
+          <div style="display:flex;justify-content:center;gap:32px;text-align:center;">
+            <div>
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748B;">ROUND</div>
+              <div id="rounds-current" style="font-size:52px;font-weight:800;line-height:1;color:white;">1</div>
+              <div id="rounds-total" style="font-size:11px;color:#64748B;margin-top:-2px;">/ 4</div>
+            </div>
+            <div>
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#64748B;">COMPLETATI</div>
+              <div id="rounds-done" style="font-size:52px;font-weight:800;line-height:1;color:#34D399;">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="emom-info" class="hidden" style="margin-top:20px;padding:0 12px;">
+          <div style="background:#0F172A;border:1px solid #334155;border-radius:14px;padding:14px;">
+            <div style="font-size:11px;text-align:center;color:#64748B;margin-bottom:4px;">QUESTO MINUTO</div>
+            <div id="emom-current-ex" style="font-size:20px;font-weight:700;text-align:center;"></div>
+            <div id="emom-reps" style="text-align:center;color:#38BDF8;font-weight:600;margin-top:2px;"></div>
+          </div>
+        </div>
+
+        <div id="timer-actions" style="margin-top:28px;"></div>
+
+        <div id="prestart-note" class="hidden" style="text-align:center;font-size:12px;color:#F59E0B;margin-top:16px;font-weight:600;">
+          ⏱ 3-2-1... pronto?
+        </div>
+      </div>
+
+      <div id="timer-help" style="text-align:center;font-size:12px;color:#64748B;margin-top:16px;padding:0 12px;"></div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    // ==================== DATA ====================
+    const workouts = [
+      {
+        id: 1,
+        titolo: "GIORNO 1",
+        durata: "30-35 min",
+        focus: "Gambe + Core",
+        note: "EMOM + rounds di plank e mobilità spalle.",
+        protocolli: [
+          {
+            id: "d1-emom",
+            tipo: "emom",
+            label: "EMOM 20'",
+            durataMin: 20,
+            esercizi: [
+              { nome: "Squat", qty: "20", desc: "Piedi larghezza spalle. Scendi con anche indietro, ginocchia in fuori, petto alto. Tocca la profondità con cosce parallele o sotto. Ritorna spingendo sui talloni." },
+              { nome: "Sit up", qty: "15", desc: "Sdraiato supino, piedi a terra, mani dietro la testa o sul petto. Solleva busto con addominali fino a seduto, poi controlla la discesa senza usare lo slancio." }
+            ],
+            note: "Completa A e B entro ogni minuto. Il tempo che avanza è recupero."
+          },
+          {
+            id: "d1-rounds",
+            tipo: "rounds",
+            label: "4 Rounds",
+            rounds: 4,
+            items: [
+              { nome: "Plank a braccia tese", tempo: "30\"", desc: "Posizione di push-up alta. Corpo perfettamente dritto dalla testa ai talloni. Core contratto, glutei attivi. Non lasciare che il bacino crolli o si alzi." },
+              { nome: "Circonduzioni spalle", tempo: "1'", desc: "Braccia tese parallele al pavimento. Piccoli cerchi controllati usando solo le spalle (non i gomiti). 30\" avanti + 30\" indietro." }
+            ],
+            restSec: 60,
+            note: "Recupera 60\" tra un round e l'altro."
+          }
+        ]
+      },
+      {
+        id: 2,
+        titolo: "GIORNO 2",
+        durata: "40 min",
+        focus: "Resistenza + Posteriori",
+        note: "AMRAP in zona 2. Corsa conversazionale.",
+        protocolli: [
+          {
+            id: "d2-amrap",
+            tipo: "amrap",
+            label: "AMRAP 40'",
+            durataMin: 40,
+            esercizi: [
+              { nome: "Corsa", qty: "2'", desc: "Zona 2: ritmo facile, devi riuscire a parlare a frasi intere. Se non puoi correre, marcia veloce o usa la bike." },
+              { nome: "Ab Walk", qty: "15", desc: "In piedi → mani a terra → cammini con le mani avanti (gambe tese) fino ad arrivare in plank con petto a terra. Poi cammini indietro con le mani fino a tornare in piedi." },
+              { nome: "Good morning", qty: "30", desc: "Piedi larghezza spalle, mani dietro la nuca. Ginocchia morbide. Spingi fianchi indietro con schiena dritta. Senti lo stretch sui posteriori delle cosce. Ritorna spingendo fianchi avanti." }
+            ],
+            note: "Il più importante: mantieni il ritmo conversazionale."
+          }
+        ]
+      },
+      {
+        id: 3,
+        titolo: "GIORNO 3",
+        durata: "30-35 min",
+        focus: "Push + Core obliquo",
+        note: "EMOM + core laterale.",
+        protocolli: [
+          {
+            id: "d3-emom",
+            tipo: "emom",
+            label: "EMOM 20'",
+            durataMin: 20,
+            esercizi: [
+              { nome: "Push up", qty: "10-20", desc: "Scegli un numero sostenibile. Corpo dritto, mani larghezza spalle. Scendi finché il petto è a 5cm da terra. Spingi forte. Variante: ginocchia se serve." },
+              { nome: "Affondi alternati", qty: "20", desc: "Passo avanti, scendi con ginocchio posteriore che sfiora terra. Ginocchio anteriore non supera la punta del piede. Alterna. Mantieni busto verticale." }
+            ],
+            note: "Completa entrambi gli esercizi entro il minuto."
+          },
+          {
+            id: "d3-rounds",
+            tipo: "rounds",
+            label: "4 Rounds",
+            rounds: 4,
+            items: [
+              { nome: "Crunch", tempo: "30", desc: "Sdraiato, ginocchia piegate, mani al petto o tempie. Solleva solo le scapole contraendo gli addominali. Non tirare con il collo." },
+              { nome: "Side plank dinamici", tempo: "15/side", desc: "Side plank su avambraccio. Abbassa e rialza il fianco (hip dip) per 15\" per lato. Oppure thread the needle: passa la mano superiore sotto il corpo e apri." }
+            ],
+            restSec: 45
+          }
+        ]
+      },
+      {
+        id: 4,
+        titolo: "GIORNO 4",
+        durata: "25-30 min",
+        focus: "Pliometria + Spalle/Core",
+        note: "Salti mono + plank shoulder tap.",
+        protocolli: [
+          {
+            id: "d4-jumps",
+            tipo: "simple",
+            label: "20X — Salti mono",
+            durataMin: 8,
+            esercizi: [
+              { nome: "Salto 1 piede → atterra 2", qty: "20 totali", desc: "In piedi su UN piede. Salta più alto possibile. Atterra su ENTRAMBI i piedi assorbendo l'impatto. 10 salti con piede destro + 10 con sinistro. Riposa 30\" tra un salto e l'altro." }
+            ],
+            note: "20 salti totali (10 per gamba). Recupera 30\" tra ogni salto."
+          },
+          {
+            id: "d4-rounds",
+            tipo: "rounds",
+            label: "4 Rounds",
+            rounds: 4,
+            items: [
+              { nome: "Plank shoulder tap", tempo: "20", desc: "Plank alto su braccia tese. Stacca una mano e tocca la spalla opposta. Alterna. Mantieni il busto fermo: zero oscillazioni. Core fortissimo." },
+              { nome: "Glute bridge", tempo: "20", desc: "Sdraiato, piedi a terra. Solleva i fianchi spingendo con i talloni. Stringi i glutei 1 secondo in alto. Scendi lentamente." },
+              { nome: "Reverse crunch", tempo: "20", desc: "Sdraiato, ginocchia a 90°. Mani a terra o sul petto. Solleva bacino e ginocchia verso il petto usando solo gli addominali inferiori." }
+            ],
+            restSec: 60
+          }
+        ]
+      },
+      {
+        id: 5,
+        titolo: "GIORNO 5",
+        durata: "30 min",
+        focus: "Cardio + Potenza",
+        note: "EMOM + 3 round brutali.",
+        protocolli: [
+          {
+            id: "d5-emom",
+            tipo: "emom",
+            label: "EMOM 20'",
+            durataMin: 20,
+            esercizi: [
+              { nome: "Wall sit", tempo: "30\"", desc: "Schiena completamente contro il muro. Scendi finché le cosce sono parallele al pavimento (ginocchia 90°). Talloni a terra. Mantieni." },
+              { nome: "Flutter kicks", tempo: "30\"", desc: "Sdraiato, mani sotto i glutei o dietro la testa. Gambe tese a 20-30cm da terra. Alterna calci veloci su e giù senza mai toccare il pavimento." }
+            ],
+            note: "30\" per esercizio. Se il wall sit è troppo duro, scendi un po' meno."
+          },
+          {
+            id: "d5-rounds",
+            tipo: "rounds",
+            label: "3 Rounds",
+            rounds: 3,
+            items: [
+              { nome: "Burpees over line", qty: "30", desc: "Burpee completo (salto, plank, push-up, salto). Alla fine fai un piccolo salto laterale oltre una linea immaginaria sul pavimento, poi un altro salto per tornare. 30 totali." },
+              { nome: "Affondi saltati", qty: "30", desc: "Affondo. Esplodi verso l'alto e scambia le gambe in aria. Atterra direttamente nell'affondo opposto. Continua fluido." }
+            ],
+            restSec: 90,
+            note: "Recupera 90\" tra i round."
+          }
+        ]
+      },
+      {
+        id: 6,
+        titolo: "GIORNO 6",
+        durata: "30-35 min",
+        focus: "Spalle + Core alto volume",
+        note: "Manico di scopa + V-up e squat jump.",
+        protocolli: [
+          {
+            id: "d6-shoulders",
+            tipo: "rounds",
+            label: "5 Rounds (manico scopa)",
+            rounds: 5,
+            items: [
+              { nome: "Shoulder press", qty: "20", desc: "Con manico di scopa o bastone. Presa leggermente più larga delle spalle. Spingi il bastone sopra la testa fino a braccia estese. Core stretto, non inarcare la schiena." },
+              { nome: "Alzate frontali", qty: "20", desc: "Bastone o manico. Braccia tese, alza il bastone davanti a te fino all'altezza delle spalle. Controlla la discesa (3 secondi)." }
+            ],
+            restSec: 60,
+            note: "Recupera 1 minuto tra i round."
+          },
+          {
+            id: "d6-core",
+            tipo: "rounds",
+            label: "2 Rounds",
+            rounds: 2,
+            items: [
+              { nome: "V-up", qty: "50", desc: "Sdraiato, braccia sopra la testa. Solleva contemporaneamente gambe e busto formando una V. Tocca le mani alle caviglie o ai piedi. Controlla la discesa." },
+              { nome: "Squat saltati", qty: "50", desc: "Squat normale ma esplosivo: alla fine salta più alto che puoi. Atterra morbido e riparti immediatamente." }
+            ],
+            restSec: 90
+          }
+        ]
+      },
+      {
+        id: 7,
+        titolo: "GIORNO 7",
+        durata: "32 min",
+        focus: "Velocità + Resistenza",
+        note: "Warm-up specifico + 10 intervalli.",
+        protocolli: [
+          {
+            id: "d7-warmup",
+            tipo: "text",
+            label: "Warm-up (8-10 min)",
+            items: [
+              { nome: "Camminata in punta di piedi", qty: "10m", desc: "Cammina 10 metri sulla punta dei piedi, talloni alti. Poi 10m sui talloni (punte in su)." },
+              { nome: "Camminata piedi in dentro", qty: "10m", desc: "Piedi rivolti verso l'interno (pigeon toe). Cammina 10 metri." },
+              { nome: "Camminata piedi in fuori", qty: "10m", desc: "Piedi rivolti verso l'esterno (duck walk). Cammina 10 metri." },
+              { nome: "Corsa blanda", qty: "5 min", desc: "Corsa molto facile per scaldare tutto il corpo." }
+            ]
+          },
+          {
+            id: "d7-intervals",
+            tipo: "intervals",
+            label: "10 Rounds — Velocità",
+            rounds: 10,
+            workSec: 20,
+            restSec: 120,
+            esercizi: [
+              { nome: "Corsa molto veloce", desc: "Sul posto o in piccolo spazio. Passi cortissimi e velocissimi (quasi high knees o fast feet). Massima cadenza. 20 secondi di fuoco." }
+            ],
+            note: "20\" di corsa velocissima → 2' di corsa blanda o marcia. 10 volte."
+          }
+        ]
+      },
+      {
+        id: 8,
+        titolo: "GIORNO 8",
+        durata: "~35 min",
+        focus: "For Time + Scarico",
+        note: "Chip di alto volume. Poi cammina.",
+        protocolli: [
+          {
+            id: "d8-fortime",
+            tipo: "fortime",
+            label: "FOR TIME",
+            esercizi: [
+              { nome: "Sit up", qty: "100", desc: "100 sit-up totali. Puoi spezzare come vuoi." },
+              { nome: "Push up", qty: "150", desc: "150 flessioni. Spezza in set da 10-15-20." },
+              { nome: "Mezzi squat", qty: "200", desc: "200 mezzi squat (squat parziali fino a cosce parallele). Più veloci possibile." }
+            ],
+            note: "Ordine libero ma non mischiare. Completa un esercizio prima di passare al successivo."
+          },
+          {
+            id: "d8-cooldown",
+            tipo: "text",
+            label: "Cool down",
+            items: [
+              { nome: "Camminata scioglimento", qty: "10 min", desc: "Cammina a ritmo facile per 10 minuti. Respira. Allunga leggermente quadricipiti, flessori dell'anca e petto." }
+            ]
+          }
+        ]
+      }
+    ]
+
+    // ==================== STATE ====================
+    let currentDetailDay = null
+    let activeTimer = null
+    let timerInterval = null
+    let audioCtx = null
+
+    // ==================== UTILS ====================
+    function showToast(msg, ms = 2200) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.classList.remove('hidden')
+      setTimeout(() => t.classList.add('hidden'), ms)
+    }
+
+    function getCompletedDays() {
+      try {
+        return JSON.parse(localStorage.getItem('greece8_completed') || '{}')
+      } catch { return {} }
+    }
+
+    function markDayComplete(dayId) {
+      const done = getCompletedDays()
+      done[dayId] = new Date().toISOString().slice(0,10)
+      localStorage.setItem('greece8_completed', JSON.stringify(done))
+    }
+
+    function isDayComplete(dayId) {
+      const done = getCompletedDays()
+      return !!done[dayId]
+    }
+
+    // ==================== SOUNDS ====================
+    function initAudio() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)() } catch(e) {}
+      }
+      return audioCtx
+    }
+
+    function beep(freq = 880, duration = 140, type = 'sine', volume = 0.7) {
+      const ctx = initAudio()
+      if (!ctx) return
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      const filter = ctx.createBiquadFilter()
+      osc.type = type
+      osc.frequency.value = freq
+      filter.type = 'lowpass'
+      filter.frequency.value = 2400
+      gain.gain.value = volume
+      const now = ctx.currentTime
+      osc.connect(filter)
+      filter.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(now)
+      gain.gain.setValueAtTime(volume, now)
+      gain.gain.linearRampToValueAtTime(0.0001, now + duration/1000)
+      osc.stop(now + duration/1000 + 0.05)
+    }
+
+    function vibrate(ms = 25) {
+      if (navigator.vibrate) navigator.vibrate(ms)
+    }
+
+    function playPrestart() {
+      const ctx = initAudio()
+      if (!ctx) return Promise.resolve()
+      return new Promise(resolve => {
+        vibrate(20)
+        beep(620, 180, 'sine', 0.6)
+        setTimeout(() => {
+          vibrate(20)
+          beep(780, 180, 'sine', 0.65)
+          setTimeout(() => {
+            vibrate(20)
+            beep(940, 180, 'sine', 0.7)
+            setTimeout(() => {
+              vibrate(40)
+              beep(1240, 420, 'sine', 0.85)
+              setTimeout(resolve, 260)
+            }, 780)
+          }, 780)
+        }, 780)
+      })
+    }
+
+    function playMinuteBeep() {
+      vibrate(15)
+      beep(980, 90, 'square', 0.6)
+      setTimeout(() => beep(1240, 60, 'sine', 0.5), 110)
+    }
+
+    function playRoundComplete() {
+      vibrate([20, 30, 60])
+      beep(760, 110, 'sine', 0.6)
+      setTimeout(() => beep(980, 110, 'sine', 0.65), 130)
+      setTimeout(() => beep(1240, 200, 'sine', 0.7), 280)
+    }
+
+    function playWarning() {
+      vibrate(30)
+      beep(650, 70, 'sawtooth', 0.5)
+      setTimeout(() => beep(650, 70, 'sawtooth', 0.5), 160)
+    }
+
+    function playFinish() {
+      vibrate([40, 40, 120])
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => beep(1100 + i*90, 160, 'sine', 0.7), i * 180)
+      }
+    }
+
+    // ==================== RENDER DAYS ====================
+    function renderDays() {
+      const container = document.getElementById('days-grid')
+      container.innerHTML = ''
+      const completed = getCompletedDays()
+
+      workouts.forEach(w => {
+        const isDone = !!completed[w.id]
+        const card = document.createElement('div')
+        card.className = 'day-card'
+        if (isDone) card.style.borderColor = '#059669'
+
+        let badges = ''
+        w.protocolli.forEach(p => {
+          if (p.tipo === 'emom') badges += `<span class="wod-badge" style="background:#451A03;color:#FCD34D;">EMOM</span>`
+          else if (p.tipo === 'amrap') badges += `<span class="wod-badge" style="background:#3B0764;color:#C084FC;">AMRAP</span>`
+          else if (p.tipo === 'fortime') badges += `<span class="wod-badge" style="background:#4C1D95;color:#F9A8D4;">FOR TIME</span>`
+          else if (p.tipo === 'intervals') badges += `<span class="wod-badge" style="background:#164E63;color:#67E8F9;">INTERVAL</span>`
+          else badges += `<span class="wod-badge" style="background:#334155;color:#CBD5E1;">ROUNDS</span>`
+        })
+
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:start;">
+            <div>
+              <div style="font-size:22px;font-weight:700;letter-spacing:-0.03em;">${w.titolo}</div>
+              <div style="font-size:12px;color:#64748B;margin-top:2px;">${w.durata}</div>
+            </div>
+            ${isDone ? `<div style="color:#34D399;font-size:20px;">✓</div>` : ''}
+          </div>
+          <div style="margin-top:auto;padding-top:20px;">
+            <div style="font-size:14px;font-weight:600;color:#7DD3FC;">${w.focus}</div>
+            <div style="font-size:11px;color:#64748B;line-height:1.35;margin-top:4px;">${w.note}</div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #334155;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:4px;">${badges}</div>
+            <div style="color:#38BDF8;font-size:11px;font-weight:600;">APRI →</div>
+          </div>
+        `
+        card.onclick = () => openDetail(w.id)
+        container.appendChild(card)
+      })
+    }
+
+    // ==================== DETAIL ====================
+    function openDetail(dayId) {
+      const workout = workouts.find(w => w.id === dayId)
+      if (!workout) return
+      currentDetailDay = dayId
+
+      document.getElementById('detail-header').innerHTML = `
+        <span>${workout.titolo}</span> <span style="font-size:12px;font-weight:400;color:#64748B;">${workout.durata}</span>
+      `
+
+      let html = `<div style="margin-bottom:12px;">
+        <div style="color:#7DD3FC;font-weight:600;">${workout.focus}</div>
+        <div style="color:#94A3B8;font-size:14px;margin-top:4px;">${workout.note}</div>
+      </div>`
+
+      workout.protocolli.forEach((proto, idx) => {
+        html += renderProtocol(workout, proto, idx)
+      })
+
+      const done = isDayComplete(dayId)
+      html += `
+        <div style="margin:32px 0 24px;">
+          <button onclick="completeCurrentDay()" 
+                  style="width:100%;padding:14px 0;border-radius:14px;font-weight:700;font-size:14px;transition:all 0.1s;
+                         ${done ? 'background:#065F46;color:#6EE7B7;border:1px solid #059669' : 'background:linear-gradient(135deg,#0EA5E9,#0284C8);color:white;border:none'}">
+            ${done ? '✓ GIORNATA COMPLETATA' : 'SEGNA COME COMPLETATA'}
+          </button>
+        </div>`
+
+      document.getElementById('detail-content').innerHTML = html
+      document.getElementById('detail-view').classList.remove('hidden')
+      document.getElementById('detail-view').classList.add('flex')
+    }
+
+    function renderProtocol(workout, proto, index) {
+      let h = `<div class="card" style="margin-top:20px;padding:16px;">`
+
+      h += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span class="section-header">${proto.label}</span>`
+
+      if (['emom','amrap','fortime','intervals','rounds'].includes(proto.tipo)) {
+        h += `<button onclick="launchTimer(${workout.id}, '${proto.id}', event)" 
+                     style="padding:6px 16px;font-size:12px;font-weight:700;border-radius:999px;background:#0EA5E9;color:black;border:none;">AVVIA TIMER</button>`
+      } else if (proto.tipo === 'simple') {
+        h += `<button onclick="launchSimpleTimer(${workout.id}, '${proto.id}', event)" 
+                     style="padding:6px 16px;font-size:12px;font-weight:700;border-radius:999px;background:#0EA5E9;color:black;border:none;">AVVIA</button>`
+      }
+      h += `</div>`
+
+      const items = proto.esercizi || proto.items || []
+      items.forEach(ex => {
+        const qty = ex.qty || ex.tempo || ''
+        h += `
+          <div class="exercise-row" onclick="toggleExerciseDesc(this)">
+            <div style="width:36px;text-align:right;font-family:ui-monospace;font-size:13px;color:#38BDF8;font-weight:600;padding-top:2px;">${qty}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;">${ex.nome}</div>
+              <div class="exercise-desc">${ex.desc}</div>
+            </div>
+            <div style="color:#64748B;font-size:11px;padding-top:3px;">↓</div>
+          </div>`
+      })
+
+      if (proto.note) h += `<div style="font-size:12px;color:#64748B;margin-top:12px;padding-left:4px;">${proto.note}</div>`
+      h += `</div>`
+      return h
+    }
+
+    function toggleExerciseDesc(row) {
+      const desc = row.querySelector('.exercise-desc')
+      if (desc) desc.classList.toggle('open')
+    }
+
+    function closeDetail() {
+      const view = document.getElementById('detail-view')
+      view.classList.remove('flex')
+      view.classList.add('hidden')
+      renderDays()
+    }
+
+    function completeCurrentDay() {
+      if (!currentDetailDay) return
+      markDayComplete(currentDetailDay)
+      showToast('Giornata segnata come completata ✓')
+      openDetail(currentDetailDay)
+      renderDays()
+    }
+
+    // ==================== TIMER ENGINE ====================
+    let timerState = {}
+
+    function launchTimer(dayId, protoId, ev) {
+      ev.stopImmediatePropagation()
+      const workout = workouts.find(w => w.id === dayId)
+      const proto = workout.protocolli.find(p => p.id === protoId)
+      if (!proto) return
+
+      const overlay = document.getElementById('timer-overlay')
+      overlay.classList.add('show')
+
+      document.getElementById('timer-title').textContent = proto.label
+
+      timerState = {
+        type: proto.tipo,
+        proto: proto,
+        workoutId: dayId,
+        startTime: null,
+        isRunning: false,
+        roundsDone: 0,
+        currentRound: 1,
+        emomMinute: 0,
+        amrapRounds: 0,
+        forTimeStart: null,
+        phase: null
+      }
+
+      const counters = document.getElementById('timer-counters')
+      const emomInfo = document.getElementById('emom-info')
+      counters.classList.add('hidden')
+      emomInfo.classList.add('hidden')
+      document.getElementById('prestart-note').classList.add('hidden')
+
+      if (proto.tipo === 'emom') renderEMOM(proto)
+      else if (proto.tipo === 'amrap') renderAMRAP(proto)
+      else if (proto.tipo === 'fortime') renderForTime(proto)
+      else if (proto.tipo === 'intervals') renderIntervals(proto)
+      else if (proto.tipo === 'rounds') renderRounds(proto)
+    }
+
+    function renderEMOM(proto) {
+      document.getElementById('timer-display').textContent = `${String(proto.durataMin).padStart(2,'0')}:00`
+      document.getElementById('timer-phase').textContent = 'EMOM 20\''
+      document.getElementById('timer-sub').textContent = 'Ogni minuto: A + B'
+      document.getElementById('emom-info').classList.remove('hidden')
+
+      document.getElementById('timer-actions').innerHTML = `
+        <button onclick="startEMOM()" class="timer-btn" style="padding:16px;font-size:17px;background:#10B981;color:black;margin-bottom:8px;">INIZIA — 3-2-1</button>
+        <button onclick="pauseResumeTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;margin-bottom:8px;">PAUSA / RIPRENDI</button>
+        <button onclick="endTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#1E2937;border:1px solid #334155;color:#94A3B8;">TERMINA</button>
+      `
+      document.getElementById('timer-help').innerHTML = `Completa ${proto.esercizi[0].qty} ${proto.esercizi[0].nome} + ${proto.esercizi[1].qty} ${proto.esercizi[1].nome} entro il minuto.`
+    }
+
+    function startEMOM() {
+      const proto = timerState.proto
+      timerState.startTime = Date.now()
+      timerState.isRunning = true
+      timerState.emomMinute = 0
+      document.getElementById('prestart-note').classList.remove('hidden')
+
+      playPrestart().then(() => {
+        document.getElementById('prestart-note').classList.add('hidden')
+        updateEMOMDisplay()
+        if (timerState.interval) clearInterval(timerState.interval)
+        timerState.interval = setInterval(() => {
+          if (!timerState.isRunning) return
+          const elapsed = Date.now() - timerState.startTime
+          const minPassed = Math.floor(elapsed / 60000)
+          if (minPassed !== timerState.emomMinute && minPassed < proto.durataMin) {
+            timerState.emomMinute = minPassed
+            playMinuteBeep()
+            updateEMOMDisplay()
+          }
+          updateEMOMDisplay()
+          if (minPassed >= proto.durataMin) {
+            clearInterval(timerState.interval)
+            playFinish()
+            document.getElementById('timer-phase').innerHTML = `<span style="color:#34D399;">COMPLETATO</span>`
+            document.getElementById('timer-sub').textContent = 'Ottimo lavoro!'
+            document.getElementById('timer-actions').innerHTML = `<button onclick="endTimer()" class="timer-btn" style="padding:16px;font-size:17px;background:#10B981;color:black;">CHIUDI</button>`
+          }
+        }, 250)
+      })
+    }
+
+    function updateEMOMDisplay() {
+      const proto = timerState.proto
+      const elapsed = Date.now() - timerState.startTime
+      const totalSec = proto.durataMin * 60
+      const remainingSec = Math.max(0, totalSec - Math.floor(elapsed / 1000))
+      const min = Math.floor(remainingSec / 60)
+      const sec = remainingSec % 60
+      document.getElementById('timer-display').textContent = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`
+      const currentMin = timerState.emomMinute
+      const isA = currentMin % 2 === 0
+      const ex = proto.esercizi[isA ? 0 : 1]
+      document.getElementById('emom-current-ex').textContent = ex.nome
+      document.getElementById('emom-reps').textContent = `${ex.qty} reps`
+      document.getElementById('timer-phase').innerHTML = `MINUTO <span style="font-family:monospace;">${currentMin + 1}</span> / ${proto.durataMin}`
+    }
+
+    function renderAMRAP(proto) {
+      document.getElementById('timer-display').textContent = `${String(proto.durataMin).padStart(2,'0')}:00`
+      document.getElementById('timer-phase').textContent = 'AMRAP'
+      document.getElementById('timer-sub').textContent = 'Fai più round possibile'
+      document.getElementById('timer-counters').classList.remove('hidden')
+      document.getElementById('rounds-current').textContent = '1'
+      document.getElementById('rounds-total').textContent = `/ ∞`
+      document.getElementById('rounds-done').textContent = '0'
+
+      document.getElementById('timer-actions').innerHTML = `
+        <button onclick="startAMRAP()" class="timer-btn" style="padding:16px;font-size:17px;background:#7C3AED;color:white;margin-bottom:8px;">INIZIA — 3-2-1</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button onclick="amrapNextRound()" class="timer-btn" style="padding:12px;font-size:14px;background:#065F46;border:1px solid #059669;color:#6EE7B7;">+1 ROUND</button>
+          <button onclick="pauseResumeTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;">PAUSA</button>
+        </div>
+        <button onclick="endTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#1E2937;border:1px solid #334155;color:#94A3B8;margin-top:8px;">TERMINA</button>
+      `
+      document.getElementById('timer-help').innerHTML = `Tocca "+1 ROUND" ogni volta che completi un ciclo.`
+    }
+
+    function startAMRAP() {
+      const proto = timerState.proto
+      timerState.startTime = Date.now()
+      timerState.isRunning = true
+      timerState.amrapRounds = 0
+      document.getElementById('prestart-note').classList.remove('hidden')
+
+      playPrestart().then(() => {
+        document.getElementById('prestart-note').classList.add('hidden')
+        updateAMRAPDisplay()
+        if (timerState.interval) clearInterval(timerState.interval)
+        timerState.interval = setInterval(() => {
+          if (!timerState.isRunning) return
+          const elapsed = Date.now() - timerState.startTime
+          const totalSec = proto.durataMin * 60
+          const remaining = Math.max(0, totalSec - Math.floor(elapsed / 1000))
+          const m = Math.floor(remaining / 60)
+          const s = remaining % 60
+          document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+          if (remaining <= 0) {
+            clearInterval(timerState.interval)
+            playFinish()
+            document.getElementById('timer-phase').innerHTML = `<span style="color:#34D399;">TEMPO SCADUTO</span>`
+            document.getElementById('timer-sub').textContent = `Round completati: ${timerState.amrapRounds}`
+          }
+          if (remaining === 10) playWarning()
+        }, 300)
+      })
+    }
+
+    function updateAMRAPDisplay() {
+      document.getElementById('rounds-done').textContent = timerState.amrapRounds
+      document.getElementById('rounds-current').textContent = timerState.amrapRounds + 1
+    }
+
+    function amrapNextRound() {
+      timerState.amrapRounds++
+      updateAMRAPDisplay()
+      beep(1050, 70, 'sine', 0.5)
+    }
+
+    function renderForTime(proto) {
+      document.getElementById('timer-display').textContent = '00:00'
+      document.getElementById('timer-phase').textContent = 'FOR TIME'
+      document.getElementById('timer-sub').textContent = 'Completa il chip il prima possibile'
+      document.getElementById('timer-actions').innerHTML = `
+        <button onclick="startForTime()" class="timer-btn" style="padding:16px;font-size:17px;background:#E11D48;color:white;margin-bottom:8px;">INIZIA CRONOMETRO</button>
+        <button onclick="pauseResumeTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;margin-bottom:8px;">PAUSA / RIPRENDI</button>
+        <button onclick="finishForTime()" class="timer-btn" style="padding:12px;font-size:14px;font-weight:700;background:#059669;color:white;">HO FINITO!</button>
+      `
+      document.getElementById('timer-help').innerHTML = `100 Sit-up + 150 Push-up + 200 Mezzi squat.`
+    }
+
+    function startForTime() {
+      timerState.forTimeStart = Date.now()
+      timerState.isRunning = true
+      if (timerState.interval) clearInterval(timerState.interval)
+      timerState.interval = setInterval(() => {
+        if (!timerState.isRunning) return
+        const elapsed = Date.now() - timerState.forTimeStart
+        const sec = Math.floor(elapsed / 1000)
+        const m = Math.floor(sec / 60)
+        const s = sec % 60
+        document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      }, 250)
+    }
+
+    function finishForTime() {
+      if (timerState.interval) clearInterval(timerState.interval)
+      const elapsed = timerState.forTimeStart ? Date.now() - timerState.forTimeStart : 0
+      const sec = Math.floor(elapsed / 1000)
+      const m = Math.floor(sec / 60)
+      const s = sec % 60
+      playFinish()
+      document.getElementById('timer-phase').innerHTML = `<span style="color:#34D399;">TEMPO FINALE</span>`
+      document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+      document.getElementById('timer-sub').textContent = 'Ottimo! Salva questo tempo.'
+      document.getElementById('timer-actions').innerHTML = `<button onclick="endTimer()" class="timer-btn" style="padding:16px;font-size:17px;background:#10B981;color:black;">CHIUDI</button>`
+    }
+
+    function renderIntervals(proto) {
+      document.getElementById('timer-display').textContent = '20'
+      document.getElementById('timer-phase').textContent = `ROUND 1 / ${proto.rounds}`
+      document.getElementById('timer-sub').textContent = 'LAVORO — 20"'
+      document.getElementById('timer-actions').innerHTML = `
+        <button onclick="startIntervals()" class="timer-btn" style="padding:16px;font-size:17px;background:#06B6D4;color:black;margin-bottom:8px;">INIZIA INTERVALLO 1 — 3-2-1</button>
+        <button onclick="pauseResumeTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;margin-bottom:8px;">PAUSA / RIPRENDI</button>
+        <button onclick="skipIntervalPhase()" class="timer-btn" style="padding:12px;font-size:14px;background:#1E2937;border:1px solid #334155;color:#94A3B8;">SALTA FASE</button>
+      `
+      document.getElementById('timer-help').innerHTML = `20" di corsa velocissima → 2' recupero. 10 volte.`
+      timerState.currentRound = 1
+      timerState.phase = 'work'
+    }
+
+    function startIntervals() {
+      timerState.isRunning = true
+      timerState.currentRound = 1
+      timerState.phase = 'work'
+      document.getElementById('prestart-note').classList.remove('hidden')
+      playPrestart().then(() => {
+        document.getElementById('prestart-note').classList.add('hidden')
+        runIntervalPhase()
+      })
+    }
+
+    function runIntervalPhase() {
+      const proto = timerState.proto
+      const phaseEl = document.getElementById('timer-phase')
+      const subEl = document.getElementById('timer-sub')
+      const display = document.getElementById('timer-display')
+      let duration = timerState.phase === 'work' ? proto.workSec : proto.restSec
+      let start = Date.now()
+
+      phaseEl.innerHTML = timerState.phase === 'work' 
+        ? `ROUND <span style="font-family:monospace;">${timerState.currentRound}</span> / ${proto.rounds} — LAVORO` 
+        : `RECUPERO ROUND ${timerState.currentRound}`
+      subEl.textContent = timerState.phase === 'work' ? 'CORRI VELOCE!' : 'Recupera'
+
+      if (timerState.interval) clearInterval(timerState.interval)
+      timerState.interval = setInterval(() => {
+        if (!timerState.isRunning) return
+        const elapsed = Math.floor((Date.now() - start) / 1000)
+        const remain = Math.max(0, duration - elapsed)
+        display.textContent = String(remain)
+        if (remain <= 3 && remain > 0) beep(980, 90, 'square', 0.5)
+        if (remain <= 0) {
+          clearInterval(timerState.interval)
+          if (timerState.phase === 'work') {
+            timerState.phase = 'rest'
+            playRoundComplete()
+            runIntervalPhase()
+          } else {
+            if (timerState.currentRound >= proto.rounds) {
+              playFinish()
+              phaseEl.innerHTML = `<span style="color:#34D399;">INTERVALLO COMPLETATO</span>`
+              subEl.textContent = '10 round finiti. Grande!'
+              document.getElementById('timer-actions').innerHTML = `<button onclick="endTimer()" class="timer-btn" style="padding:16px;font-size:17px;background:#10B981;color:black;">CHIUDI</button>`
+            } else {
+              timerState.currentRound++
+              timerState.phase = 'work'
+              playMinuteBeep()
+              runIntervalPhase()
+            }
+          }
+        }
+      }, 200)
+    }
+
+    function skipIntervalPhase() {
+      if (timerState.interval) clearInterval(timerState.interval)
+      const proto = timerState.proto
+      if (timerState.phase === 'work') {
+        timerState.phase = 'rest'
+        runIntervalPhase()
+      } else {
+        if (timerState.currentRound >= proto.rounds) endTimer()
+        else {
+          timerState.currentRound++
+          timerState.phase = 'work'
+          runIntervalPhase()
+        }
+      }
+    }
+
+    function renderRounds(proto) {
+      document.getElementById('timer-display').textContent = '--'
+      document.getElementById('timer-phase').textContent = `ROUND 1 / ${proto.rounds}`
+      document.getElementById('timer-sub').textContent = proto.items[0].nome
+      timerState.currentRound = 1
+      timerState.roundItemIndex = 0
+
+      document.getElementById('timer-actions').innerHTML = `
+        <button onclick="startRounds()" class="timer-btn" style="padding:16px;font-size:17px;background:#0EA5E9;color:black;margin-bottom:8px;">INIZIA ROUND 1 — 3-2-1</button>
+        <button onclick="pauseResumeTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;margin-bottom:8px;">PAUSA</button>
+        <button onclick="nextRoundItem()" class="timer-btn" style="padding:12px;font-size:14px;background:#1E2937;border:1px solid #334155;color:#94A3B8;">PROSSIMO ESERCIZIO</button>
+      `
+      document.getElementById('timer-help').innerHTML = `${proto.rounds} round • recupera ${proto.restSec || 60} secondi tra i round.`
+    }
+
+    function startRounds() {
+      timerState.isRunning = true
+      timerState.currentRound = 1
+      timerState.roundItemIndex = 0
+      document.getElementById('prestart-note').classList.remove('hidden')
+      playPrestart().then(() => {
+        document.getElementById('prestart-note').classList.add('hidden')
+        runCurrentRoundItem()
+      })
+    }
+
+    function runCurrentRoundItem() {
+      const proto = timerState.proto
+      const item = proto.items[timerState.roundItemIndex]
+      const phaseEl = document.getElementById('timer-phase')
+      const subEl = document.getElementById('timer-sub')
+      const display = document.getElementById('timer-display')
+
+      let seconds = 30
+      const t = (item.tempo || item.qty || '').toString()
+      if (t.includes("'")) seconds = parseInt(t) * 60
+      else if (t.includes('"')) seconds = parseInt(t)
+      else if (!isNaN(parseInt(t))) seconds = parseInt(t)
+      if (t.includes('/side')) seconds = 30
+
+      phaseEl.innerHTML = `ROUND <span style="font-family:monospace;">${timerState.currentRound}</span>/${proto.rounds}`
+      subEl.innerHTML = `<span style="font-weight:600;">${item.nome}</span> — ${t}`
+
+      let start = Date.now()
+      if (timerState.interval) clearInterval(timerState.interval)
+      display.textContent = String(seconds)
+
+      timerState.interval = setInterval(() => {
+        if (!timerState.isRunning) return
+        const elapsed = Math.floor((Date.now() - start) / 1000)
+        const remain = Math.max(0, seconds - elapsed)
+        display.textContent = String(remain)
+        if (remain <= 3 && remain > 0) beep(920, 60, 'square', 0.45)
+        if (remain <= 0) {
+          clearInterval(timerState.interval)
+          nextRoundItem(true)
+        }
+      }, 180)
+    }
+
+    function nextRoundItem(auto = false) {
+      const proto = timerState.proto
+      if (timerState.interval) clearInterval(timerState.interval)
+      const nextIdx = timerState.roundItemIndex + 1
+      if (nextIdx < proto.items.length) {
+        timerState.roundItemIndex = nextIdx
+        runCurrentRoundItem()
+      } else {
+        playRoundComplete()
+        if (timerState.currentRound >= proto.rounds) {
+          document.getElementById('timer-phase').innerHTML = `<span style="color:#34D399;">TUTTI I ROUND COMPLETATI</span>`
+          document.getElementById('timer-sub').textContent = 'Ottimo lavoro!'
+          document.getElementById('timer-actions').innerHTML = `<button onclick="endTimer()" class="timer-btn" style="padding:16px;font-size:17px;background:#10B981;color:black;">CHIUDI</button>`
+          return
+        }
+        timerState.currentRound++
+        timerState.roundItemIndex = 0
+        const rest = proto.restSec || 60
+        document.getElementById('timer-phase').textContent = `RECUPERO — ${rest}"`
+        document.getElementById('timer-sub').textContent = `Round ${timerState.currentRound} tra poco`
+        document.getElementById('timer-display').textContent = String(rest)
+        let startRest = Date.now()
+        timerState.interval = setInterval(() => {
+          const remain = Math.max(0, rest - Math.floor((Date.now() - startRest) / 1000))
+          document.getElementById('timer-display').textContent = String(remain)
+          if (remain <= 0) {
+            clearInterval(timerState.interval)
+            playMinuteBeep()
+            runCurrentRoundItem()
+          }
+        }, 200)
+      }
+    }
+
+    function launchSimpleTimer(dayId, protoId, ev) {
+      ev.stopImmediatePropagation()
+      const workout = workouts.find(w => w.id === dayId)
+      const proto = workout.protocolli.find(p => p.id === protoId)
+      const overlay = document.getElementById('timer-overlay')
+      overlay.classList.add('show')
+      document.getElementById('timer-title').textContent = proto.label
+      document.getElementById('timer-display').textContent = '20'
+      document.getElementById('timer-phase').textContent = 'SALTI MONO — 20 TOTALI'
+      document.getElementById('timer-sub').textContent = '10 per gamba • 30" riposo tra salti'
+
+      timerState = { type: 'simple', proto, workoutId: dayId, count: 0, isRunning: false }
+
+      document.getElementById('timer-actions').innerHTML = `
+        <div style="text-align:center;margin-bottom:8px;">
+          <div id="simple-counter" style="font-size:60px;font-weight:800;line-height:1;">0</div>
+          <div style="font-size:11px;color:#64748B;margin-top:-4px;">SALTI COMPLETATI</div>
+        </div>
+        <button onclick="simpleDoOne()" class="timer-btn" style="padding:16px;font-size:17px;background:#D97706;color:black;margin-bottom:8px;">FATTO 1 SALTO (+1)</button>
+        <button onclick="simpleStartRest()" class="timer-btn" style="padding:12px;font-size:14px;background:#334155;border:1px solid #475569;color:#CBD5E1;">INIZIA 30" RIPOSO</button>
+        <button onclick="endTimer()" class="timer-btn" style="padding:12px;font-size:14px;background:#1E2937;border:1px solid #334155;color:#94A3B8;">TERMINA</button>
+      `
+    }
+
+    function simpleDoOne() {
+      timerState.count = (timerState.count || 0) + 1
+      document.getElementById('simple-counter').textContent = timerState.count
+      if (timerState.count >= 20) {
+        playFinish()
+        showToast('20 salti completati! Ottimo.')
+      } else {
+        beep(850, 50, 'sine', 0.4)
+      }
+    }
+
+    function simpleStartRest() {
+      const display = document.getElementById('timer-display')
+      display.textContent = '30'
+      let remain = 30
+      const iv = setInterval(() => {
+        remain--
+        display.textContent = String(remain)
+        if (remain <= 3 && remain > 0) beep(700, 60)
+        if (remain <= 0) {
+          clearInterval(iv)
+          playMinuteBeep()
+          display.textContent = '--'
+          showToast('Riposo finito — pronto per il prossimo salto')
+        }
+      }, 1000)
+    }
+
+    function pauseResumeTimer() {
+      if (!timerState) return
+      timerState.isRunning = !timerState.isRunning
+    }
+
+    function endTimer() {
+      if (timerState && timerState.interval) clearInterval(timerState.interval)
+      const overlay = document.getElementById('timer-overlay')
+      overlay.classList.remove('show')
+      timerState = null
+    }
+
+    function closeTimer() {
+      if (timerState && timerState.interval) clearInterval(timerState.interval)
+      const overlay = document.getElementById('timer-overlay')
+      overlay.classList.remove('show')
+      timerState = null
+    }
+
+    // ==================== PROGRESS ====================
+    function showProgress() {
+      const done = getCompletedDays()
+      const total = workouts.length
+      const completedCount = Object.keys(done).length
+
+      let html = `<div style="max-width:768px;margin:0 auto;padding:24px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;">
+          <div style="font-size:22px;font-weight:700;">Progresso</div>
+          <div style="color:#38BDF8;font-weight:700;font-size:20px;">${completedCount} / ${total}</div>
+        </div>`
+
+      if (completedCount === 0) {
+        html += `<div style="text-align:center;padding:48px 0;color:#64748B;">Nessun allenamento completato ancora.<br>Inizia dal Giorno 1.</div>`
+      } else {
+        html += `<div style="display:flex;flex-direction:column;gap:8px;">`
+        workouts.forEach(w => {
+          const date = done[w.id]
+          html += `<div style="display:flex;align-items:center;justify-content:space-between;background:#1E2937;border:1px solid #334155;padding:12px 16px;border-radius:14px;">
+            <div style="font-weight:600;">${w.titolo} — ${w.focus}</div>
+            <div style="font-size:12px;${date ? 'color:#34D399' : 'color:#64748B'}">${date ? '✓ ' + date : '—'}</div>
+          </div>`
+        })
+        html += `</div>`
+      }
+
+      html += `<div style="margin-top:24px;text-align:center;">
+        <button onclick="closeModalProgress()" style="padding:10px 24px;background:#334155;border:none;border-radius:12px;color:#CBD5E1;font-size:14px;">CHIUDI</button>
+      </div></div>`
+
+      const modal = document.createElement('div')
+      modal.id = 'progress-modal'
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.96);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;'
+      modal.innerHTML = html
+      document.body.appendChild(modal)
+      modal.onclick = (e) => { if (e.target.id === 'progress-modal') modal.remove() }
+    }
+
+    function closeModalProgress() {
+      const m = document.getElementById('progress-modal')
+      if (m) m.remove()
+    }
+
+    // ==================== INIT ====================
+    function registerSW() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {})
+        })
+      }
+    }
+
+    function init() {
+      renderDays()
+      registerSW()
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          const overlay = document.getElementById('timer-overlay')
+          if (overlay.classList.contains('show')) closeTimer()
+          else {
+            const detail = document.getElementById('detail-view')
+            if (!detail.classList.contains('hidden')) closeDetail()
+          }
+        }
+      })
+
+      document.body.addEventListener('touchstart', () => { initAudio() }, { once: true })
+    }
+
+    window.onload = init
+  </script>
+</body>
+</html>
