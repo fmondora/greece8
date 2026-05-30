@@ -57,6 +57,10 @@
                   class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-emerald-900/60 border border-emerald-700 text-emerald-300 font-medium">
             <span>🍽️</span> <span>Cibo</span>
           </button>
+          <button onclick="showScamSection()" 
+                  class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-red-900/60 border border-red-700 text-red-300 font-medium">
+            <span>⚠️</span> <span>Scam</span>
+          </button>
           <button onclick="showProgress()" class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-slate-900 border border-slate-700">
             <span>📊</span> <span class="font-medium">Progresso</span>
           </button>
@@ -211,6 +215,92 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCAM VIEW -->
+  <div id="scam-view" class="hidden fixed inset-0 z-[65] bg-slate-950">
+    <div class="max-w-screen-md mx-auto h-full flex flex-col">
+      <div class="sticky top-0 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 px-4 h-14 flex items-center justify-between z-10">
+        <button onclick="closeScamSection()" class="text-red-400 flex items-center gap-1 text-sm font-medium">← Chiudi</button>
+        <div class="font-semibold text-lg tracking-tight">Attenzione agli Scam</div>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-4 pt-4 pb-8 text-sm">
+
+        <!-- Atene -->
+        <div class="mb-6">
+          <div class="text-red-300 font-semibold mb-2">Ad Atene (i più comuni)</div>
+          <div class="space-y-3 text-slate-200">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Petizioni / "Firma qui"</div>
+              <div class="text-xs text-slate-400 mt-1">In Plaka, Monastiraki e vicino all'Acropoli ti avvicinano con un foglio (petizione per sordi, bambini, ecc.). Mentre firmi, ti rubano il portafoglio o il telefono. <span class="text-red-400">Non firmare mai.</span></div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Tassisti dall'aeroporto / centro</div>
+              <div class="text-xs text-slate-400 mt-1">Molti non usano il tassametro o fanno giri lunghi. Usa Bolt o Uber (più sicuri e spesso più economici). O prendi il bus/metro.</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">"Polizia" in borghese</div>
+              <div class="text-xs text-slate-400 mt-1">Ti mostrano un tesserino e ti chiedono di controllare i soldi "perché ci sono banconote false". Ti distraggono e ti rubano. La vera polizia non fa mai così.</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Braccialetti e rose</div>
+              <div class="text-xs text-slate-400 mt-1">Ti mettono il braccialetto o la rosa in mano e poi pretendono soldi. Se li rifiuti, diventano aggressivi. Ignora e vai via.</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Ristoranti in zone turistiche</div>
+              <div class="text-xs text-slate-400 mt-1">Pane "omaggio" che poi ti fanno pagare 3-4€. Coperti alti. Menu con prezzi diversi per turisti. Evita i posti con gente che urla fuori per farti entrare.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Spetses / Isole -->
+        <div class="mb-6">
+          <div class="text-red-300 font-semibold mb-2">A Spetses e sulle isole</div>
+          <div class="space-y-3 text-slate-200">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Carrozze e water taxi</div>
+              <div class="text-xs text-slate-400 mt-1">Chiedi sempre il prezzo prima. A volte fanno il doppio ai turisti. Cammina o usa la bici quando possibile.</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Pane e acqua "omaggio"</div>
+              <div class="text-xs text-slate-400 mt-1">In alcune tavole tipiche del porto ti portano pane e acqua senza chiedertelo e poi te lo fanno pagare 4-5€. Chiedi sempre il menu e di non portare niente senza averlo ordinato.</div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl p-3">
+              <div class="font-medium">Prezzi "turista" vs "locale"</div>
+              <div class="text-xs text-slate-400 mt-1">In certi posti hanno due listini. Se il posto è pieno di greci e i prezzi sono scritti chiaramente, sei più al sicuro.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Consigli generali -->
+        <div>
+          <div class="text-red-300 font-semibold mb-2">Regole base che salvano</div>
+          <div class="bg-slate-900 border border-slate-700 rounded-2xl p-4 text-slate-200">
+            <ul class="space-y-1.5 text-sm">
+              <li>• Non firmare mai nulla per strada</li>
+              <li>• Usa Bolt/Uber invece del taxi in città</li>
+              <li>• Non mostrare mai il portafoglio o i soldi in pubblico</li>
+              <li>• Se un posto ti sembra troppo "friendly" con i turisti, probabilmente lo è</li>
+              <li>• Chiedi sempre "posso vedere il menu?" prima di sederti</li>
+              <li>• Tieni il telefono e il portafoglio in tasca anteriore o marsupio</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-500 mt-6 px-1">
+          La Grecia è generalmente sicura. Questi scam sono fastidi più che pericoli veri, ma rompono le palle e rovinano la vacanza. Meglio prevenirli.
+        </div>
+
       </div>
     </div>
   </div>
@@ -755,6 +845,16 @@
     function closeFoodSection() {
       document.getElementById('food-view').classList.remove('flex', 'flex-col')
       document.getElementById('food-view').classList.add('hidden')
+    }
+
+    function showScamSection() {
+      document.getElementById('scam-view').classList.remove('hidden')
+      document.getElementById('scam-view').classList.add('flex', 'flex-col')
+    }
+
+    function closeScamSection() {
+      document.getElementById('scam-view').classList.remove('flex', 'flex-col')
+      document.getElementById('scam-view').classList.add('hidden')
     }
 
     function initFoodMap() {
