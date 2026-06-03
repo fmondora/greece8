@@ -208,10 +208,14 @@ Le risposte vengono salvate nel campo `context` della lettura e appaiono come ba
 
 - I valori vanno salvati nell'oggetto della lettura sotto `context`.
 - Nella history mostrare badge compatti (😴7 🍷 🌿 etc.).
-- Per export verso Lucia: produrre JSON o CSV con questi campi + le metriche HR/HRV.
+- I dati (con context) vengono inviati su Supabase usando lo stesso progetto del "progetto tantra" (qvsvlwfrnnwaufllxsbf), con autenticazione Google (stesso auth.users e provider Google del tantra).
+- RLS: solo l'utente autenticato può accedere ai propri dati (user_id = auth.uid()).
+- Per Lucia/MCP: i tool `get_hrv_readings` e `get_hrv_summary_for_council` nel pattern-server di Lucia possono consumare i dati direttamente da Supabase (configura SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY dalle .dev.vars del tantra).
 - Il questionario deve essere **opzionale** (molte persone non vogliono sempre rispondere), ma incoraggiato ("questi tag rendono i tuoi dati 10x più utili per il Council").
 
 ---
+
+*Integrato con il Supabase del progetto tantra per auth Google condivisa e consumo via MCP nel Council di Lucia.*
 
 *Prodotto guardando il Council di Lucia (Ayurveda, TCM, Medicina Funzionale, Piante Sciamaniche) + lo stile collaudato di HRVTraining.*
 
