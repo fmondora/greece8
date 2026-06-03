@@ -610,6 +610,7 @@
           <div class="flex items-center justify-between mb-2 px-1">
             <div class="text-sm font-semibold text-rose-300">Storico &amp; Baseline</div>
             <button onclick="clearHRVHistory()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">cancella</button>
+            <button onclick="exportHRVForLucia()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-rose-300">esporta JSON per Lucia</button>
           </div>
           <div id="hrv-history" class="space-y-1.5 text-sm"></div>
           <canvas id="hrv-trend-canvas" class="mt-3 w-full rounded-2xl bg-slate-900 border border-slate-700" height="90" width="640"></canvas>
@@ -2085,6 +2086,27 @@
       saveHRVReadings()
       renderHRVHistory()
       drawHRVTrend()
+    }
+
+    function exportHRVForLucia() {
+      if (!hrvReadings.length) {
+        alert('Nessun dato HRV da esportare')
+        return
+      }
+      const data = {
+        exported_at: new Date().toISOString(),
+        source: 'greece-training PWA',
+        readings: hrvReadings,
+        note: 'Dati HRV + contesto. Importa in Lucia per analisi con il Council (Ayurveda, TCM, FuncMed, Piante).'
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'})
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `greece-hrv-export-${new Date().toISOString().slice(0,10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      showToast('Esportato JSON con contesto per Lucia')
     }
 
     // ---------- BLUETOOTH (Web Bluetooth) ----------
