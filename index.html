@@ -435,6 +435,8 @@
 
               <div id="hrv-res-quality" class="mt-4 text-xs px-3 py-1.5 rounded-2xl bg-emerald-900/30 border border-emerald-800 text-emerald-300"></div>
 
+              <div id="hrv-res-interpret" class="mt-3 text-sm text-slate-300"></div>
+
               <div id="hrv-res-readiness" class="mt-3 text-sm font-medium"></div>
             </div>
 
@@ -1709,6 +1711,29 @@
         qel.innerHTML = 'Qualità bassa.<br>Prova di nuovo: copri <strong>bene tutta l\'area</strong> lente+flash finché il preview diventa rosso scuro uniforme. Tieni 60-120s senza muovere. Su iPhone la torcia a volte non si forza — usa luce ambiente.'
         qel.className = 'mt-4 text-xs px-3 py-1.5 rounded-2xl bg-rose-900/30 border border-rose-800 text-rose-300'
       }
+
+      // Absolute interpretation (useful even on first readings)
+      const interp = document.getElementById('hrv-res-interpret')
+      let interpText = ''
+      const hr = reading.hr
+      const rmssd = reading.rmssd
+
+      if (hr && rmssd) {
+        let hrNote = ''
+        if (hr < 50) hrNote = 'FC molto bassa — ottimo livello aerobico.'
+        else if (hr < 60) hrNote = 'FC bassa — buon recupero.'
+        else if (hr < 70) hrNote = 'FC nella norma.'
+        else hrNote = 'FC un po\' alta per riposo.'
+
+        let hrvNote = ''
+        if (rmssd > 100) hrvNote = 'HRV eccellente (ottimo tono parasimpatico, forte recupero).'
+        else if (rmssd > 70) hrvNote = 'HRV molto buona.'
+        else if (rmssd > 40) hrvNote = 'HRV nella media.'
+        else hrvNote = 'HRV bassa — possibile stanchezza o stress.'
+
+        interpText = `${hrNote} ${hrvNote} <span class="text-[10px] text-slate-500">(valori camera PPG; usa i trend più che i numeri assoluti)</span>`
+      }
+      if (interp) interp.innerHTML = interpText
 
       // readiness vs baseline
       const baseline = computeBaselineRMSSD()
