@@ -2169,7 +2169,7 @@
       }
 
       try {
-        const res = await fetch(`${cfg.url}/rest/v1/hrv_readings`, {
+        const res = await fetch(`${cfg.url}/rest/v1/hrv_readings?on_conflict=ts`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
