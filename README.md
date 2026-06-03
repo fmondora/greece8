@@ -28,6 +28,15 @@ Funziona completamente offline una volta aggiunto alla schermata Home.
 
 Per la fotocamera: copri completamente flash+lente con polpastrello, pressione leggera, 60-120s a riposo.
 
+### Domande contestuali (nuovo)
+Dopo ogni misurazione HRV appare un questionario rapido in stile HRVTraining (sonno, fatica, alcol, viaggio, malattia, digestione, umore, piante...).
+
+Le domande sono arricchite con i suggerimenti del **Council di Lucia** (Ayurveda, TCM, Medicina Funzionale, Piante Sciamaniche).
+
+Vedi il file completo con rationale di ogni tradizione: [hrv-context-questions.md](hrv-context-questions.md)
+
+I tag si salvano con la lettura e compaiono come badge nella history. Servono per correlazioni potenti quando importi i dati in Lucia.
+
 ## Sviluppo locale
 
 ```bash
