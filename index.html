@@ -342,7 +342,7 @@
             <div class="bg-slate-900 border border-slate-700 rounded-3xl p-4 mb-4">
               <div class="text-xs uppercase tracking-widest text-rose-400 mb-2">ISTRUZIONI PER PRECISIONE</div>
               <ul class="text-sm text-slate-300 space-y-1.5">
-                <li>• Usa <strong>fotocamera posteriore</strong> (quella del flash)</li>
+                <li>• <strong>IMPORTANTE:</strong> deve usare la fotocamera POSTERIORE (quella con il flash). Se vedi la tua faccia → è quella frontale sbagliata.</li>
                 <li>• <strong>Copri TUTTO</strong> l'area fotocamere + flash LED con la polpastrello (premi piano ma sigilla bene)</li>
                 <li>• Nel preview video deve diventare <strong>rosso scuro / uniforme</strong> (non vedi la stanza)</li>
                 <li>• Sdraiato o seduto calmo, respira normale, <strong>non muovere</strong> mano/telefono</li>
@@ -360,10 +360,16 @@
           <!-- LIVE CAMERA UI (hidden until start) -->
           <div id="hrv-camera-live" class="hidden">
             <div class="relative mb-3">
-              <video id="hrv-video" class="w-full rounded-3xl border border-slate-700 bg-black" style="max-height: 280px; transform: scaleX(1);" playsinline muted></video>
+              <video id="hrv-video" class="w-full rounded-3xl border border-slate-700 bg-black" style="max-height: 280px; transform: scaleX(1); object-fit: cover;" playsinline muted></video>
               <div id="hrv-guide" class="absolute inset-0 rounded-3xl pointer-events-none guide-overlay flex items-center justify-center">
                 <div class="text-center text-white text-xs font-medium tracking-widest px-3">COPRI LENTE + FLASH<br><span class="opacity-75">il preview deve diventare rosso scuro uniforme</span></div>
               </div>
+            </div>
+
+            <!-- Warning if wrong camera (front instead of rear) -->
+            <div id="hrv-camera-warning" class="hidden mb-3 text-xs bg-red-900/70 border border-red-700 text-red-200 rounded-2xl p-3 text-center">
+              ⚠️ Sta usando la <strong>fotocamera FRONTALE</strong> (selfie).<br>
+              Il dito va messo sul <strong>retro</strong> (dove c'è il flash). Chiudi questa misurazione, togli i permessi fotocamera dalle impostazioni, e riprova.
             </div>
 
             <div class="flex items-center justify-between mb-1 px-1">
@@ -1173,6 +1179,60 @@
     }
 
     // ---------- CAMERA PPG ----------
+    async function getRearCameraStream() {
+      // 1. Try direct facingMode exact/ideal (works on many devices)
+      const tryConstraints = [
+        { video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+        { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } },
+        { video: { facingMode: 'environment' } }
+      ];
+
+      for (const cons of tryConstraints) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia(cons);
+          const track = stream.getVideoTracks()[0];
+          const settings = track.getSettings ? track.getSettings() : {};
+          if (settings.facingMode === 'environment') {
+            return stream;
+          }
+          // got something but not confirmed rear — keep it for now, we'll check later
+          return stream;
+        } catch (e) {}
+      }
+
+      // 2. Strong fallback: enumerate devices (more reliable on iOS Safari/PWA)
+      try {
+        // First get any video permission
+        const tempStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        tempStream.getTracks().forEach(t => t.stop());
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        let rearDevice = devices.find(d =>
+          d.kind === 'videoinput' &&
+          (d.label.toLowerCase().includes('back') ||
+           d.label.toLowerCase().includes('rear') ||
+           d.label.toLowerCase().includes('posteriore') ||
+           d.label.toLowerCase().includes('environment'))
+        );
+
+        if (!rearDevice) {
+          // take the last videoinput (often rear on phones)
+          const videoInputs = devices.filter(d => d.kind === 'videoinput');
+          rearDevice = videoInputs[videoInputs.length - 1];
+        }
+
+        if (rearDevice && rearDevice.deviceId) {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: rearDevice.deviceId } }
+          });
+          return stream;
+        }
+      } catch (e) {}
+
+      // 3. Absolute last resort
+      return await navigator.mediaDevices.getUserMedia({ video: true });
+    }
+
     async function startCameraHRV(seconds) {
       hrvTargetDur = seconds || 60
       hrvSamples = []
@@ -1185,22 +1245,24 @@
 
       const video = document.getElementById('hrv-video')
       const guide = document.getElementById('hrv-guide')
+      const warning = document.getElementById('hrv-camera-warning')
+
+      if (warning) warning.classList.add('hidden')
 
       try {
-        const constraints = {
-          video: {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-          }
-        }
-        hrvStream = await navigator.mediaDevices.getUserMedia(constraints)
+        hrvStream = await getRearCameraStream()
         video.srcObject = hrvStream
         await video.play()
 
+        // Check if we actually got the rear camera
+        const track = hrvStream.getVideoTracks()[0]
+        const settings = track.getSettings ? track.getSettings() : {}
+        if (settings.facingMode === 'user') {
+          if (warning) warning.classList.remove('hidden')
+        }
+
         // Try to turn on torch (works on many Android + some iOS)
         try {
-          const track = hrvStream.getVideoTracks()[0]
           const caps = track.getCapabilities ? track.getCapabilities() : {}
           if (caps.torch) {
             await track.applyConstraints({ advanced: [{ torch: true }] })
