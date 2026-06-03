@@ -626,8 +626,22 @@
                 <button onclick="syncAllHRVToSupabase()" class="flex-1 py-1 rounded bg-emerald-700 text-xs">Sincronizza tutto</button>
               </div>
               <div class="text-[10px] text-slate-500">I dati HRV + context (risposte questionario) vanno su tabella <code>hrv_readings</code>. Funziona offline. Crea la tabella in Supabase con:</div>
-              <pre class="text-[9px] bg-black p-1 rounded mt-1 overflow-auto">CREATE TABLE hrv_readings ( ts bigint primary key, hr int, rmssd int, sdnn int, duration int, mode text, valid boolean, context jsonb, created_at timestamptz );</pre>
-              <div class="text-[9px] text-emerald-400">RLS: abilita insert/select per anon (o usa policy con user_id se vuoi auth).</div>
+              <pre class="text-[9px] bg-black p-1 rounded mt-1 overflow-auto">CREATE TABLE hrv_readings (
+  ts bigint primary key,
+  hr int,
+  rmssd int,
+  sdnn int,
+  duration int,
+  mode text,
+  valid boolean,
+  context jsonb,
+  created_at timestamptz default now()
+);
+
+-- RLS (adatta come vuoi)
+alter table hrv_readings enable row level security;
+create policy "anon insert" on hrv_readings for insert to anon with check (true);
+create policy "anon select" on hrv_readings for select to anon using (true);</pre>
             </div>
           </details>
           <div id="hrv-history" class="space-y-1.5 text-sm"></div>
