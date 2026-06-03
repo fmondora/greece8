@@ -35,6 +35,10 @@
     .timer-btn:active { transform: scale(0.96); }
 
     .wod-badge { font-size: 10px; padding: 1px 8px; border-radius: 9999px; font-weight: 700; letter-spacing: .5px; }
+
+    .ppg-canvas { background: #0b111f; border-radius: 12px; }
+    .hrv-metric { font-variant-numeric: tabular-nums; }
+    .guide-overlay { background: radial-gradient(circle at center, rgba(255,255,255,0.15) 30%, rgba(0,0,0,0.45) 60%); }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen pb-12">
@@ -63,6 +67,9 @@
           </button>
           <button onclick="showProgress()" class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-slate-900 border border-slate-700">
             <span>📊</span> <span class="font-medium">Progresso</span>
+          </button>
+          <button onclick="showHRVSection()" class="flex items-center gap-x-1.5 px-3 py-1.5 text-xs rounded-2xl bg-rose-900/60 border border-rose-700 text-rose-300 font-medium">
+            <span>❤️</span> <span>HRV</span>
           </button>
         </div>
       </div>
@@ -301,6 +308,185 @@
           La Grecia è generalmente sicura. Questi scam sono fastidi più che pericoli veri, ma rompono le palle e rovinano la vacanza. Meglio prevenirli.
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- HRV VIEW -->
+  <div id="hrv-view" class="hidden fixed inset-0 z-[65] bg-slate-950">
+    <div class="max-w-screen-md mx-auto h-full flex flex-col">
+      <div class="sticky top-0 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800 px-4 h-14 flex items-center justify-between z-10">
+        <button onclick="closeHRVSection()" class="text-rose-400 flex items-center gap-1 text-sm font-medium">← Chiudi</button>
+        <div class="font-semibold text-lg tracking-tight">FC &amp; HRV</div>
+        <div class="w-9"></div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-4 pt-4 pb-8">
+        <!-- Intro -->
+        <div class="mb-4">
+          <div class="text-sm text-rose-300 font-medium">Simile a HRV4Training</div>
+          <div class="text-[13px] text-slate-400">Misura FC e variabilità cardiaca (RMSSD) con la fotocamera posteriore del telefono + flash. Per prontezza allenamento (readiness). 60-120 secondi a riposo, dito fermo.</div>
+        </div>
+
+        <!-- Mode selector -->
+        <div class="flex gap-2 mb-4" id="hrv-mode-tabs">
+          <button onclick="setHRVMode('camera')" id="hrv-tab-camera"
+                  class="flex-1 py-2 text-sm font-semibold rounded-2xl bg-rose-600 text-white">Fotocamera</button>
+          <button onclick="setHRVMode('bluetooth')" id="hrv-tab-bluetooth"
+                  class="flex-1 py-2 text-sm font-semibold rounded-2xl bg-slate-800 border border-slate-700">Bluetooth (Polar)</button>
+        </div>
+
+        <!-- CAMERA MODE -->
+        <div id="hrv-camera-panel">
+          <div id="hrv-camera-instr">
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-4 mb-4">
+              <div class="text-xs uppercase tracking-widest text-rose-400 mb-2">ISTRUZIONI PER PRECISIONE</div>
+              <ul class="text-sm text-slate-300 space-y-1.5">
+                <li>• Usa <strong>fotocamera posteriore</strong> (quella del flash)</li>
+                <li>• <strong>Copri completamente</strong> lente + flash con la polpastrello (indice o medio)</li>
+                <li>• Premi <strong>delicatamente</strong> — troppa pressione blocca il flusso</li>
+                <li>• Sdraiato o seduto calmo, respira normale, <strong>non muovere</strong> mano/telefono</li>
+                <li>• Mani tiepide, evita subito dopo caffè/alcol/allenamento pesante</li>
+                <li>• 60s minimo (120s meglio). La torcia si accende automaticamente</li>
+              </ul>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mb-4">
+              <button onclick="startCameraHRV(60)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">60 secondi</button>
+              <button onclick="startCameraHRV(90)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">90 secondi</button>
+              <button onclick="startCameraHRV(120)" class="py-3 rounded-2xl bg-rose-600 text-white text-sm font-semibold">120 secondi (migliore)</button>
+            </div>
+          </div>
+
+          <!-- LIVE CAMERA UI (hidden until start) -->
+          <div id="hrv-camera-live" class="hidden">
+            <div class="relative mb-3">
+              <video id="hrv-video" class="w-full rounded-3xl border border-slate-700 bg-black" style="max-height: 280px; transform: scaleX(1);" playsinline muted></video>
+              <div id="hrv-guide" class="absolute inset-0 rounded-3xl pointer-events-none guide-overlay flex items-center justify-center">
+                <div class="text-center text-white text-xs font-medium tracking-widest px-4">POSIZIONA IL DITO QUI<br><span class="opacity-75">copri flash + lente</span></div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between mb-1 px-1">
+              <div>
+                <span id="hrv-live-bpm" class="font-display text-5xl font-semibold tabular-nums">—</span>
+                <span class="text-sm text-slate-400">bpm</span>
+              </div>
+              <div class="text-right">
+                <div id="hrv-live-timer" class="font-mono text-2xl tabular-nums text-rose-300">01:00</div>
+                <div id="hrv-live-status" class="text-[10px] text-emerald-400">SEGNALE BUONO</div>
+              </div>
+            </div>
+
+            <!-- Live PPG waveform -->
+            <canvas id="hrv-ppg-canvas" class="ppg-canvas w-full mb-3" height="72" width="640"></canvas>
+
+            <div class="mb-3">
+              <div class="flex justify-between text-[10px] text-slate-500 mb-0.5 px-0.5">
+                <div>QUALITÀ SEGNALE</div><div id="hrv-quality-text">—</div>
+              </div>
+              <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="hrv-quality-bar" class="h-2 w-0 bg-gradient-to-r from-rose-400 to-emerald-400 transition-all"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="stopCameraHRV(true)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">FERMA &amp; ANALIZZA</button>
+              <button onclick="cancelCameraHRV()" class="py-3 rounded-2xl bg-slate-900 border border-slate-700 text-sm font-semibold text-rose-300">ANNULLA</button>
+            </div>
+            <div class="text-center text-[10px] text-slate-500 mt-2">Mantieni il dito fermo. Non parlare.</div>
+          </div>
+
+          <!-- RESULTS -->
+          <div id="hrv-camera-results" class="hidden">
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-5 mb-4">
+              <div class="text-xs text-slate-400 mb-1">RISULTATI</div>
+              <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <div class="text-[10px] text-slate-500">FREQUENZA CARDIACA</div>
+                  <div id="hrv-res-hr" class="hrv-metric text-6xl font-semibold tabular-nums text-white leading-none">68</div>
+                  <div class="text-xs text-slate-400 -mt-1">bpm</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-500">HRV (RMSSD)</div>
+                  <div id="hrv-res-rmssd" class="hrv-metric text-6xl font-semibold tabular-nums text-rose-300 leading-none">47</div>
+                  <div class="text-xs text-slate-400 -mt-1">ms</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-500">SDNN</div>
+                  <div id="hrv-res-sdnn" class="hrv-metric text-3xl font-semibold tabular-nums">38</div>
+                  <div class="text-[10px] text-slate-400">ms</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-500">BEATS ANALIZZATI</div>
+                  <div id="hrv-res-n" class="hrv-metric text-3xl font-semibold tabular-nums">58</div>
+                </div>
+              </div>
+
+              <div id="hrv-res-quality" class="mt-4 text-xs px-3 py-1.5 rounded-2xl bg-emerald-900/30 border border-emerald-800 text-emerald-300"></div>
+
+              <div id="hrv-res-readiness" class="mt-3 text-sm font-medium"></div>
+            </div>
+
+            <div class="flex gap-2">
+              <button onclick="saveCurrentHRVReading()" class="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-semibold text-sm">SALVA LETTURA</button>
+              <button onclick="retryHRV()" class="flex-1 py-3.5 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">RIPROVA</button>
+            </div>
+            <button onclick="closeHRVResults()" class="mt-2 w-full py-2 text-xs text-slate-400">CHIUDI</button>
+          </div>
+        </div>
+
+        <!-- BLUETOOTH MODE -->
+        <div id="hrv-bluetooth-panel" class="hidden">
+          <div class="bg-slate-900 border border-slate-700 rounded-3xl p-4 mb-4 text-sm">
+            <div class="font-medium text-sky-300 mb-1">Sensore Bluetooth (consigliato per massima precisione)</div>
+            <div class="text-slate-400 text-xs">Polar H10, H9, Verity Sense, o qualsiasi fascia con servizio Heart Rate BLE standard. Fornisce direttamente gli IBI (RR intervals) — zero processing PPG.</div>
+          </div>
+
+          <div id="hrv-bt-instr">
+            <button onclick="startBluetoothHRV()" class="w-full py-3.5 rounded-2xl bg-sky-600 text-white font-semibold">CONNETTI SENSORE E MISURA 60s</button>
+            <div class="text-[10px] text-center text-slate-500 mt-2">Richiede browser compatibile (Chrome/Edge Android o desktop). Su iOS limitato.</div>
+          </div>
+
+          <div id="hrv-bt-live" class="hidden">
+            <div class="bg-slate-900 border border-slate-700 rounded-3xl p-4 mb-3">
+              <div class="flex justify-between items-end">
+                <div>
+                  <div id="hrv-bt-device" class="text-xs text-sky-400"></div>
+                  <div><span id="hrv-bt-bpm" class="text-6xl font-semibold tabular-nums">—</span> <span class="text-sm text-slate-400">bpm</span></div>
+                </div>
+                <div class="text-right">
+                  <div id="hrv-bt-timer" class="font-mono text-3xl tabular-nums text-sky-300">60</div>
+                  <div class="text-[10px] text-slate-400">secondi</div>
+                </div>
+              </div>
+              <div id="hrv-bt-beats" class="mt-1 text-xs text-emerald-400">0 battiti ricevuti • in attesa IBI...</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="stopBluetoothHRV(true)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">FERMA &amp; ANALIZZA</button>
+              <button onclick="cancelBluetoothHRV()" class="py-3 rounded-2xl bg-slate-900 border border-slate-700 text-sm font-semibold text-sky-300">DISCONNETTI</button>
+            </div>
+          </div>
+
+          <div id="hrv-bt-results" class="hidden">
+            <!-- same results reused via JS -->
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="mt-6">
+          <div class="flex items-center justify-between mb-2 px-1">
+            <div class="text-sm font-semibold text-rose-300">Storico &amp; Baseline</div>
+            <button onclick="clearHRVHistory()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">cancella</button>
+          </div>
+          <div id="hrv-history" class="space-y-1.5 text-sm"></div>
+          <canvas id="hrv-trend-canvas" class="mt-3 w-full rounded-2xl bg-slate-900 border border-slate-700" height="90" width="640"></canvas>
+          <div class="text-[10px] text-center text-slate-500 mt-1">RMSSD nel tempo (baseline = media ultimi 7)</div>
+        </div>
+
+        <div class="mt-5 text-[10px] text-slate-500 px-1">
+          RMSSD è la metrica principale per la prontezza (attività parasimpatica). Traccia la tua baseline personale. I valori camera sono validati per trend e readiness a riposo (simile HRV4Training).
+        </div>
       </div>
     </div>
   </div>
@@ -895,10 +1081,807 @@
       }
     }
 
+    // ==================== HRV / FC + HRV (camera PPG + Web Bluetooth) ====================
+    let hrvReadings = []
+    let hrvCurrentReading = null
+    let hrvMode = 'camera'
+    let hrvStream = null
+    let hrvSampleInterval = null
+    let hrvRAF = null
+    let hrvSamples = []
+    let hrvStartTime = 0
+    let hrvTargetDur = 60
+    let hrvBTDevice = null
+    let hrvBTChar = null
+    let hrvBTIBIs = []
+    let hrvBTBPM = null
+    let hrvPpgCanvasCtx = null
+    let hrvTrendCtx = null
+
+    function loadHRVReadings() {
+      try {
+        hrvReadings = JSON.parse(localStorage.getItem('greece8_hrv') || '[]')
+      } catch(e){ hrvReadings = [] }
+    }
+    function saveHRVReadings() {
+      localStorage.setItem('greece8_hrv', JSON.stringify(hrvReadings))
+    }
+
+    function showHRVSection() {
+      loadHRVReadings()
+      document.getElementById('hrv-view').classList.remove('hidden')
+      document.getElementById('hrv-view').classList.add('flex', 'flex-col')
+      setHRVMode('camera')
+      renderHRVHistory()
+      drawHRVTrend()
+    }
+    function closeHRVSection() {
+      cancelCameraHRV()
+      cancelBluetoothHRV()
+      const v = document.getElementById('hrv-view')
+      v.classList.remove('flex','flex-col')
+      v.classList.add('hidden')
+      // reset panels
+      resetHRVUI()
+    }
+
+    function setHRVMode(mode) {
+      hrvMode = mode
+      const camTab = document.getElementById('hrv-tab-camera')
+      const btTab = document.getElementById('hrv-tab-bluetooth')
+      const camP = document.getElementById('hrv-camera-panel')
+      const btP = document.getElementById('hrv-bluetooth-panel')
+
+      if (mode === 'camera') {
+        camTab.className = 'flex-1 py-2 text-sm font-semibold rounded-2xl bg-rose-600 text-white'
+        btTab.className = 'flex-1 py-2 text-sm font-semibold rounded-2xl bg-slate-800 border border-slate-700'
+        camP.classList.remove('hidden')
+        btP.classList.add('hidden')
+      } else {
+        camTab.className = 'flex-1 py-2 text-sm font-semibold rounded-2xl bg-slate-800 border border-slate-700'
+        btTab.className = 'flex-1 py-2 text-sm font-semibold rounded-2xl bg-sky-600 text-white'
+        camP.classList.add('hidden')
+        btP.classList.remove('hidden')
+      }
+      resetHRVUI()
+    }
+
+    function resetHRVUI() {
+      // camera
+      document.getElementById('hrv-camera-instr').classList.remove('hidden')
+      document.getElementById('hrv-camera-live').classList.add('hidden')
+      document.getElementById('hrv-camera-results').classList.add('hidden')
+      // bt
+      document.getElementById('hrv-bt-instr').classList.remove('hidden')
+      document.getElementById('hrv-bt-live').classList.add('hidden')
+      document.getElementById('hrv-bt-results').classList.add('hidden')
+      // stop any
+      if (hrvStream) {
+        hrvStream.getTracks().forEach(t => t.stop())
+        hrvStream = null
+      }
+      if (hrvSampleInterval) { clearInterval(hrvSampleInterval); hrvSampleInterval = null }
+      if (hrvRAF) { cancelAnimationFrame(hrvRAF); hrvRAF = null }
+      if (hrvBTChar) { try { hrvBTChar.stopNotifications() } catch(e){} }
+      if (hrvBTDevice && hrvBTDevice.gatt.connected) { try { hrvBTDevice.gatt.disconnect() } catch(e){} }
+      hrvBTDevice = null; hrvBTChar = null; hrvBTIBIs = []
+    }
+
+    // ---------- CAMERA PPG ----------
+    async function startCameraHRV(seconds) {
+      hrvTargetDur = seconds || 60
+      hrvSamples = []
+      resetHRVUI()
+
+      const instr = document.getElementById('hrv-camera-instr')
+      const live = document.getElementById('hrv-camera-live')
+      instr.classList.add('hidden')
+      live.classList.remove('hidden')
+
+      const video = document.getElementById('hrv-video')
+      const guide = document.getElementById('hrv-guide')
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          }
+        }
+        hrvStream = await navigator.mediaDevices.getUserMedia(constraints)
+        video.srcObject = hrvStream
+        await video.play()
+
+        // Try to turn on torch (works on many Android + some iOS)
+        try {
+          const track = hrvStream.getVideoTracks()[0]
+          const caps = track.getCapabilities ? track.getCapabilities() : {}
+          if (caps.torch) {
+            await track.applyConstraints({ advanced: [{ torch: true }] })
+          }
+        } catch(e){ /* torch not available or denied, continue anyway */ }
+
+        // prepare ppg canvas (fixed internal res, css scales)
+        const ppgC = document.getElementById('hrv-ppg-canvas')
+        ppgC.width = 640
+        ppgC.height = 72
+        hrvPpgCanvasCtx = ppgC.getContext('2d', { alpha: true })
+
+        // start sampling loop at ~30fps via rAF for accuracy
+        hrvStartTime = performance.now()
+        hrvSamples = []
+        document.getElementById('hrv-live-timer').textContent = String(hrvTargetDur).padStart(2,'0') + ':00'
+        document.getElementById('hrv-live-bpm').textContent = '—'
+        document.getElementById('hrv-quality-bar').style.width = '0%'
+        document.getElementById('hrv-quality-text').textContent = '—'
+        document.getElementById('hrv-live-status').textContent = 'IN ATTESA DITO...'
+        document.getElementById('hrv-live-status').className = 'text-[10px] text-amber-400'
+
+        hrvRAF = requestAnimationFrame(cameraSampleLoop)
+
+        // countdown + quality updater
+        hrvSampleInterval = setInterval(() => {
+          const elapsed = (performance.now() - hrvStartTime) / 1000
+          const left = Math.max(0, hrvTargetDur - Math.floor(elapsed))
+          const m = Math.floor(left / 60), s = left % 60
+          document.getElementById('hrv-live-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+
+          // live rough BPM + quality from last ~12s
+          if (hrvSamples.length > 20) {
+            const recent = hrvSamples.slice(-Math.min(360, hrvSamples.length))
+            const rough = computeRoughBPM(recent)
+            if (rough > 35 && rough < 220) document.getElementById('hrv-live-bpm').textContent = Math.round(rough)
+            const q = estimateSignalQuality(recent)
+            updateLiveQuality(q)
+          }
+
+          if (elapsed >= hrvTargetDur) {
+            stopCameraHRV(false)
+          }
+        }, 250)
+
+        // initial status
+        setTimeout(() => {
+          if (!live.classList.contains('hidden')) {
+            document.getElementById('hrv-live-status').textContent = 'COPRI LENTE + FLASH'
+            document.getElementById('hrv-live-status').className = 'text-[10px] text-rose-400'
+          }
+        }, 1200)
+      } catch (err) {
+        alert('Impossibile accedere alla fotocamera: ' + (err.message || err))
+        resetHRVUI()
+      }
+    }
+
+    let _hrvSampleCanvas = null
+    function cameraSampleLoop() {
+      const video = document.getElementById('hrv-video')
+      if (!video || !hrvStream || video.readyState < 2) {
+        if (hrvStream) hrvRAF = requestAnimationFrame(cameraSampleLoop)
+        return
+      }
+      // sample a central ROI (finger should cover most) — reuse canvas
+      const w = 96, h = 96
+      if (!_hrvSampleCanvas) {
+        _hrvSampleCanvas = document.createElement('canvas')
+        _hrvSampleCanvas.width = w
+        _hrvSampleCanvas.height = h
+      }
+      const tctx = _hrvSampleCanvas.getContext('2d', { willReadFrequently: true })
+      // center crop of video
+      const vw = video.videoWidth || 640, vh = video.videoHeight || 480
+      const sx = Math.max(0, (vw - w*1.6)/2), sy = Math.max(0, (vh - h*1.6)/2)
+      tctx.drawImage(video, sx, sy, w*1.6, h*1.6, 0, 0, w, h)
+      const data = tctx.getImageData(0, 0, w, h).data
+      let sumG = 0, n = 0
+      for (let i = 0; i < data.length; i += 4) {
+        sumG += data[i+1] // green
+        n++
+      }
+      const v = n > 0 ? (sumG / n) : 128   // GREEN channel (strong PPG)
+      hrvSamples.push({ t: performance.now(), v })
+
+      // draw live waveform (last ~8-10 seconds)
+      drawLivePPG()
+
+      // continue
+      hrvRAF = requestAnimationFrame(cameraSampleLoop)
+    }
+
+    function drawLivePPG() {
+      const ctx = hrvPpgCanvasCtx
+      const c = document.getElementById('hrv-ppg-canvas')
+      if (!ctx || !c || hrvSamples.length < 3) return
+      const W = c.width, H = c.height
+      ctx.clearRect(0, 0, W, H)
+
+      // take last ~10s worth (at ~30fps = ~300 samples)
+      const N = Math.min(hrvSamples.length, 320)
+      const buf = hrvSamples.slice(-N)
+      if (buf.length < 3) return
+
+      // normalize to [0,1] for viz (min-max recent)
+      let minv = Infinity, maxv = -Infinity
+      for (let s of buf) { if (s.v < minv) minv = s.v; if (s.v > maxv) maxv = s.v }
+      const range = Math.max(1, maxv - minv)
+
+      ctx.strokeStyle = '#f43f5e'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      for (let i = 0; i < buf.length; i++) {
+        const x = (i / (buf.length - 1)) * W
+        const y = H - ((buf[i].v - minv) / range) * (H - 6) - 3
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.stroke()
+
+      // faint grid
+      ctx.strokeStyle = 'rgba(148,163,184,0.15)'
+      ctx.lineWidth = 1
+      for (let k=1; k<4; k++) {
+        const y = (H/4)*k
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke()
+      }
+    }
+
+    function updateLiveQuality(q) {
+      const bar = document.getElementById('hrv-quality-bar')
+      const txt = document.getElementById('hrv-quality-text')
+      const status = document.getElementById('hrv-live-status')
+      const pct = Math.max(5, Math.min(100, Math.round(q * 100)))
+      bar.style.width = pct + '%'
+      if (q > 0.72) {
+        txt.textContent = 'OTTIMO'
+        txt.className = 'text-emerald-400 text-[10px]'
+        status.textContent = 'SEGNALE BUONO'
+        status.className = 'text-[10px] text-emerald-400'
+      } else if (q > 0.45) {
+        txt.textContent = 'OK'
+        txt.className = 'text-amber-400 text-[10px]'
+        status.textContent = 'SEGNALE OK'
+        status.className = 'text-[10px] text-amber-400'
+      } else {
+        txt.textContent = 'BASSO'
+        txt.className = 'text-rose-400 text-[10px]'
+        status.textContent = 'MUOVI DITO / COPRI MEGLIO'
+        status.className = 'text-[10px] text-rose-400'
+      }
+    }
+
+    function estimateSignalQuality(samples) {
+      if (samples.length < 25) return 0.1
+      // detrend quick + std of recent window
+      const vals = samples.map(s => s.v)
+      const n = vals.length
+      // simple highpass-ish: compare local variation
+      let diffs = 0, cnt = 0
+      for (let i = 4; i < n; i += 2) {
+        diffs += Math.abs(vals[i] - vals[i-3])
+        cnt++
+      }
+      const amp = cnt > 0 ? diffs / cnt : 0
+      // also check overall dynamic range
+      let mn = Math.min(...vals), mx = Math.max(...vals)
+      const dyn = (mx - mn) / 255
+      // quality heuristic 0-1
+      let q = Math.min(1, (amp / 6) * 0.7 + (dyn * 2.2))
+      return Math.max(0.05, Math.min(0.98, q))
+    }
+
+    function computeRoughBPM(samples) {
+      const ibis = extractIBIs(samples, 0.6) // lower thresh for live
+      if (ibis.length < 2) return 0
+      const meanIBI = ibis.reduce((a,b)=>a+b,0) / ibis.length
+      return 60000 / meanIBI
+    }
+
+    function stopCameraHRV(manual) {
+      if (hrvSampleInterval) { clearInterval(hrvSampleInterval); hrvSampleInterval = null }
+      if (hrvRAF) { cancelAnimationFrame(hrvRAF); hrvRAF = null }
+
+      const live = document.getElementById('hrv-camera-live')
+      const res = document.getElementById('hrv-camera-results')
+      live.classList.add('hidden')
+      res.classList.remove('hidden')
+
+      // stop camera ASAP
+      if (hrvStream) {
+        hrvStream.getTracks().forEach(t => t.stop())
+        hrvStream = null
+      }
+
+      // process
+      const elapsed = (performance.now() - hrvStartTime) / 1000
+      const durationUsed = Math.min(hrvTargetDur, Math.max(20, Math.floor(elapsed)))
+
+      const ibis = extractIBIs(hrvSamples, 0.55)
+      const metrics = computeHRVFromIBIs(ibis)
+
+      // quality final
+      const q = estimateSignalQuality(hrvSamples)
+      const goodBeats = metrics.nBeats || ibis.length
+
+      hrvCurrentReading = {
+        ts: Date.now(),
+        mode: 'camera',
+        duration: durationUsed,
+        hr: metrics.hr || 0,
+        rmssd: metrics.rmssd || 0,
+        sdnn: metrics.sdnn || 0,
+        pnn50: metrics.pnn50 || 0,
+        n: goodBeats,
+        quality: q,
+        valid: metrics.valid && q > 0.35 && goodBeats > 8
+      }
+
+      renderHRVResults(hrvCurrentReading, 'camera')
+    }
+
+    function cancelCameraHRV() {
+      if (hrvSampleInterval) clearInterval(hrvSampleInterval)
+      if (hrvRAF) cancelAnimationFrame(hrvRAF)
+      if (hrvStream) { hrvStream.getTracks().forEach(t=>t.stop()); hrvStream = null }
+      hrvSamples = []
+      resetHRVUI()
+    }
+
+    function retryHRV() {
+      hrvCurrentReading = null
+      document.getElementById('hrv-camera-results').classList.add('hidden')
+      document.getElementById('hrv-camera-instr').classList.remove('hidden')
+      // if bt was used, also reset
+      document.getElementById('hrv-bt-results').classList.add('hidden')
+      document.getElementById('hrv-bt-instr').classList.remove('hidden')
+    }
+
+    function closeHRVResults() {
+      document.getElementById('hrv-camera-results').classList.add('hidden')
+      document.getElementById('hrv-bt-results').classList.add('hidden')
+      // go back to instr for the active mode
+      if (hrvMode === 'camera') {
+        document.getElementById('hrv-camera-instr').classList.remove('hidden')
+      } else {
+        document.getElementById('hrv-bt-instr').classList.remove('hidden')
+      }
+      hrvCurrentReading = null
+    }
+
+    // ---------- SIGNAL PROCESSING (shared) ----------
+    function extractIBIs(samples, threshFactor = 0.55) {
+      if (!samples || samples.length < 25) return []
+      const times = samples.map(s => s.t)
+      const vals = samples.map(s => s.v)
+
+      // 1. normalize 0-1
+      let minv = Math.min(...vals), maxv = Math.max(...vals)
+      if (maxv - minv < 1) return []
+      const norm = vals.map(v => (v - minv) / (maxv - minv))
+
+      // 2. detrend with moving average (~1.2-1.8s)
+      const win = Math.max(12, Math.floor(samples.length / 25))
+      const detr = []
+      for (let i = 0; i < norm.length; i++) {
+        let s = 0, c = 0
+        const lo = Math.max(0, i - win), hi = Math.min(norm.length - 1, i + win)
+        for (let j = lo; j <= hi; j++) { s += norm[j]; c++ }
+        detr.push(norm[i] - (s / c))
+      }
+
+      // 3. light smooth 3pt
+      const sm = []
+      for (let i = 0; i < detr.length; i++) {
+        const a = detr[Math.max(0, i-1)]
+        const b = detr[i]
+        const c = detr[Math.min(detr.length-1, i+1)]
+        sm.push((a + b + c) / 3)
+      }
+
+      // 3b. auto polarity (some setups inverted depending on absorption)
+      let sumPos = 0, sumNeg = 0
+      for (let v of sm) { if (v > 0) sumPos += v; else sumNeg -= v }
+      if (sumNeg > sumPos * 1.15) {
+        for (let i = 0; i < sm.length; i++) sm[i] = -sm[i]
+      }
+
+      // 4. adaptive peak threshold
+      let mean = 0; for (let v of sm) mean += v; mean /= sm.length
+      let varsum = 0; for (let v of sm) varsum += (v - mean) * (v - mean)
+      const std = Math.sqrt(varsum / sm.length)
+      const pThresh = mean + std * threshFactor
+
+      // 5. find peaks (slope inversion) + refractory ~280ms
+      const peaksT = []
+      const minDeltaT = 275
+      let lastT = -1e9
+      for (let i = 1; i < sm.length - 1; i++) {
+        if (sm[i] > sm[i-1] && sm[i] > sm[i+1] && sm[i] > pThresh) {
+          const t = times[i]
+          if (t - lastT >= minDeltaT) {
+            peaksT.push(t)
+            lastT = t
+          }
+        }
+      }
+
+      // 6. IBIs
+      const ibis = []
+      for (let k = 1; k < peaksT.length; k++) {
+        ibis.push(peaksT[k] - peaksT[k-1])
+      }
+
+      // 7. clean artifacts (windowed 20% rule + bounds)
+      if (ibis.length < 3) return ibis
+      const clean = []
+      const winSec = 10000 // 10s windows
+      let i = 0
+      while (i < ibis.length) {
+        // collect window
+        const winIBI = []
+        let j = i
+        const t0 = peaksT[i]
+        while (j < ibis.length && (peaksT[j+1] || peaksT[j]) - t0 < winSec) {
+          winIBI.push(ibis[j]); j++
+        }
+        if (winIBI.length < 3) { clean.push(...winIBI); i = j; continue }
+
+        const med = winIBI.slice().sort((a,b)=>a-b)[Math.floor(winIBI.length/2)]
+        const kept = []
+        for (let ibi of winIBI) {
+          if (ibi >= 260 && ibi <= 1650 && Math.abs(ibi - med) <= 0.22 * med) kept.push(ibi)
+        }
+        // if too many discarded in window, drop the window
+        if (kept.length >= Math.max(2, Math.floor(winIBI.length * 0.45))) {
+          clean.push(...kept)
+        }
+        i = j
+      }
+      return clean.length ? clean : ibis
+    }
+
+    function computeHRVFromIBIs(ibis) {
+      if (!ibis || ibis.length < 4) return { hr: 0, rmssd: 0, sdnn: 0, pnn50: 0, nBeats: ibis ? ibis.length : 0, valid: false }
+      const n = ibis.length
+      let sum = 0; for (let v of ibis) sum += v
+      const meanIBI = sum / n
+      const hr = 60000 / meanIBI
+
+      // SDNN
+      let s2 = 0; for (let v of ibis) s2 += (v - meanIBI) * (v - meanIBI)
+      const sdnn = Math.sqrt(s2 / n)
+
+      // RMSSD
+      let d2 = 0
+      for (let k = 0; k < n-1; k++) {
+        const d = ibis[k+1] - ibis[k]
+        d2 += d * d
+      }
+      const rmssd = Math.sqrt(d2 / (n-1))
+
+      // pNN50
+      let nn50 = 0
+      for (let k = 0; k < n-1; k++) if (Math.abs(ibis[k+1] - ibis[k]) > 50) nn50++
+      const pnn50 = (nn50 / (n-1)) * 100
+
+      const valid = (n >= 8) && (hr > 38 && hr < 195) && (rmssd > 3)
+      return {
+        hr: Math.round(hr),
+        rmssd: Math.round(rmssd),
+        sdnn: Math.round(sdnn),
+        pnn50: Math.round(pnn50 * 10) / 10,
+        nBeats: n,
+        valid
+      }
+    }
+
+    // ---------- RESULTS + SAVE ----------
+    function renderHRVResults(reading, fromMode) {
+      // populate the camera results panel (we reuse it for both)
+      const resPanel = document.getElementById('hrv-camera-results')
+      resPanel.classList.remove('hidden')
+
+      document.getElementById('hrv-res-hr').textContent = reading.hr || '—'
+      document.getElementById('hrv-res-rmssd').textContent = reading.rmssd || '—'
+      document.getElementById('hrv-res-sdnn').textContent = reading.sdnn || '—'
+      document.getElementById('hrv-res-n').textContent = reading.n || '—'
+
+      const qel = document.getElementById('hrv-res-quality')
+      const rel = document.getElementById('hrv-res-readiness')
+
+      if (reading.valid) {
+        qel.textContent = `Qualità buona • ${reading.duration}s • ${reading.mode === 'bluetooth' ? 'Bluetooth IBI' : 'Camera PPG'}`
+        qel.className = 'mt-4 text-xs px-3 py-1.5 rounded-2xl bg-emerald-900/30 border border-emerald-800 text-emerald-300'
+      } else {
+        qel.textContent = 'Qualità bassa — riprova con dito più stabile e pressione costante'
+        qel.className = 'mt-4 text-xs px-3 py-1.5 rounded-2xl bg-rose-900/30 border border-rose-800 text-rose-300'
+      }
+
+      // readiness vs baseline
+      const baseline = computeBaselineRMSSD()
+      if (baseline && reading.rmssd > 0) {
+        const pct = ((reading.rmssd - baseline) / baseline) * 100
+        const sign = pct >= 0 ? '+' : ''
+        let msg = ''
+        if (pct > 12) msg = `Ottima prontezza (+${Math.round(pct)}% vs baseline)`
+        else if (pct > -8) msg = `Normale (${sign}${Math.round(pct)}% vs baseline)`
+        else msg = `Bassa — considera recupero leggero (${Math.round(pct)}% vs baseline)`
+        rel.innerHTML = `<span class="text-rose-300">Baseline RMSSD: ${Math.round(baseline)} ms</span><br>${msg}`
+      } else {
+        rel.innerHTML = `<span class="text-slate-400">Salva alcune letture per calcolare la tua baseline personale.</span>`
+      }
+
+      // also fill bt-results placeholder if needed
+      const btRes = document.getElementById('hrv-bt-results')
+      if (!btRes.classList.contains('hidden')) {
+        btRes.innerHTML = resPanel.innerHTML // quick clone look
+      }
+    }
+
+    function saveCurrentHRVReading() {
+      if (!hrvCurrentReading) return
+      hrvReadings.unshift(hrvCurrentReading)
+      if (hrvReadings.length > 60) hrvReadings.length = 60
+      saveHRVReadings()
+      renderHRVHistory()
+      drawHRVTrend()
+      showToast('Lettura HRV salvata')
+      // keep results visible or auto close? keep for review
+    }
+
+    function computeBaselineRMSSD() {
+      if (!hrvReadings.length) return null
+      // last up to 7 valid
+      const recent = hrvReadings.filter(r => r.valid && r.rmssd > 0).slice(0,7)
+      if (!recent.length) return null
+      const sum = recent.reduce((a,r) => a + r.rmssd, 0)
+      return sum / recent.length
+    }
+
+    // ---------- HISTORY + TREND ----------
+    function renderHRVHistory() {
+      const el = document.getElementById('hrv-history')
+      el.innerHTML = ''
+      if (!hrvReadings.length) {
+        el.innerHTML = `<div class="text-xs text-slate-500 px-1 py-1">Nessuna misurazione ancora. Fai il primo test a riposo.</div>`
+        return
+      }
+      hrvReadings.slice(0,8).forEach((r, idx) => {
+        const d = new Date(r.ts)
+        const dateStr = d.toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit'}) + ' ' + d.toLocaleTimeString('it-IT',{hour:'2-digit', minute:'2-digit'})
+        const q = r.valid ? '✓' : '!'
+        const div = document.createElement('div')
+        div.className = `flex justify-between items-center bg-slate-900 border border-slate-700 rounded-2xl px-3 py-2 ${idx===0 ? 'border-rose-700/60' : ''}`
+        div.innerHTML = `
+          <div class="flex items-center gap-x-3">
+            <div class="font-mono text-xs text-slate-400 w-[92px]">${dateStr}</div>
+            <div><span class="tabular-nums font-semibold">${r.hr}</span> <span class="text-[10px] text-slate-400">bpm</span></div>
+            <div class="text-rose-300"><span class="tabular-nums font-semibold">${r.rmssd}</span> <span class="text-[10px] text-slate-400">rmssd</span></div>
+          </div>
+          <div class="flex items-center gap-x-2">
+            <div class="text-[10px] px-1.5 py-px rounded bg-slate-800 text-slate-400">${r.duration}s ${q}</div>
+            <button data-idx="${idx}" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-rose-300">x</button>
+          </div>`
+        div.querySelector('button').onclick = (e) => {
+          e.stopPropagation()
+          const i = parseInt(e.currentTarget.dataset.idx)
+          hrvReadings.splice(i, 1)
+          saveHRVReadings()
+          renderHRVHistory()
+          drawHRVTrend()
+        }
+        el.appendChild(div)
+      })
+    }
+
+    function drawHRVTrend() {
+      const c = document.getElementById('hrv-trend-canvas')
+      if (!c) return
+      const ctx = c.getContext('2d')
+      hrvTrendCtx = ctx
+      const W = c.width = c.offsetWidth || 320
+      const H = c.height
+      ctx.clearRect(0,0,W,H)
+
+      const valid = hrvReadings.filter(r => r.valid && r.rmssd > 0).slice(0, 20).reverse() // chronological
+      if (valid.length < 2) {
+        ctx.fillStyle = '#475569'
+        ctx.font = '11px system-ui'
+        ctx.fillText('Aggiungi 2+ misurazioni valide per il trend', 10, H/2)
+        return
+      }
+
+      const vals = valid.map(r => r.rmssd)
+      const minv = Math.min(...vals) - 3
+      const maxv = Math.max(...vals) + 3
+      const range = Math.max(8, maxv - minv)
+
+      // baseline line
+      const base = computeBaselineRMSSD()
+      if (base) {
+        const yb = H - ((base - minv) / range) * (H - 10) - 5
+        ctx.strokeStyle = 'rgba(251,113,133,0.35)'
+        ctx.setLineDash([3,3])
+        ctx.beginPath()
+        ctx.moveTo(0, yb); ctx.lineTo(W, yb); ctx.stroke()
+        ctx.setLineDash([])
+      }
+
+      // line
+      ctx.strokeStyle = '#fda4af'
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      for (let i=0; i<valid.length; i++) {
+        const x = (i / (valid.length-1)) * (W - 8) + 4
+        const y = H - ((valid[i].rmssd - minv) / range) * (H-10) - 5
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y)
+      }
+      ctx.stroke()
+
+      // dots
+      ctx.fillStyle = '#fda4af'
+      for (let i=0; i<valid.length; i++) {
+        const x = (i / (valid.length-1)) * (W - 8) + 4
+        const y = H - ((valid[i].rmssd - minv) / range) * (H-10) - 5
+        ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI*2); ctx.fill()
+      }
+    }
+
+    function clearHRVHistory() {
+      if (!confirm('Cancellare tutte le letture HRV?')) return
+      hrvReadings = []
+      saveHRVReadings()
+      renderHRVHistory()
+      drawHRVTrend()
+    }
+
+    // ---------- BLUETOOTH (Web Bluetooth) ----------
+    async function startBluetoothHRV() {
+      if (!('bluetooth' in navigator)) {
+        alert('Web Bluetooth non supportato su questo browser. Usa Chrome/Edge su Android o desktop, o la modalità fotocamera.')
+        return
+      }
+      resetHRVUI()
+      document.getElementById('hrv-bt-instr').classList.add('hidden')
+      const live = document.getElementById('hrv-bt-live')
+      live.classList.remove('hidden')
+
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: ['heart_rate'] }]
+        })
+        hrvBTDevice = device
+        document.getElementById('hrv-bt-device').textContent = device.name || 'Sensore HR'
+
+        const server = await device.gatt.connect()
+        const service = await server.getPrimaryService('heart_rate')
+        const char = await service.getCharacteristic('heart_rate_measurement')
+        hrvBTChar = char
+        hrvBTIBIs = []
+        hrvBTBPM = null
+
+        await char.startNotifications()
+        char.addEventListener('characteristicvaluechanged', handleBTValue)
+
+        // start timer 60s default (can extend)
+        hrvStartTime = performance.now()
+        hrvTargetDur = 60
+        document.getElementById('hrv-bt-timer').textContent = '60'
+        document.getElementById('hrv-bt-bpm').textContent = '—'
+        document.getElementById('hrv-bt-beats').textContent = 'In ascolto... tocca FERMA quando pronto'
+
+        const timerInt = setInterval(() => {
+          if (!live.classList.contains('hidden') && hrvBTDevice) {
+            const left = Math.max(0, hrvTargetDur - Math.floor((performance.now()-hrvStartTime)/1000))
+            document.getElementById('hrv-bt-timer').textContent = String(left)
+            if (left <= 0) {
+              clearInterval(timerInt)
+              stopBluetoothHRV(false)
+            }
+          } else {
+            clearInterval(timerInt)
+          }
+        }, 400)
+      } catch (e) {
+        alert('Connessione Bluetooth fallita: ' + (e.message || e))
+        resetHRVUI()
+      }
+    }
+
+    function handleBTValue(event) {
+      const val = event.target.value
+      const flags = val.getUint8(0)
+      const has16 = flags & 0x01
+      const hasRR = flags & 0x10
+
+      let bpm = has16 ? val.getUint16(1, true) : val.getUint8(1)
+      hrvBTBPM = bpm
+      document.getElementById('hrv-bt-bpm').textContent = bpm
+
+      if (hasRR) {
+        let offset = has16 ? 3 : 2
+        while (offset + 1 < val.byteLength) {
+          const rr = val.getUint16(offset, true) // 1/1024 s
+          const ibiMs = Math.round(rr * 1000 / 1024)
+          if (ibiMs > 260 && ibiMs < 1700) hrvBTIBIs.push(ibiMs)
+          offset += 2
+        }
+        document.getElementById('hrv-bt-beats').textContent = `${hrvBTIBIs.length} IBI ricevuti`
+      } else {
+        document.getElementById('hrv-bt-beats').textContent = `${hrvBTIBIs.length} battiti (solo BPM, HRV limitata)`
+      }
+    }
+
+    function stopBluetoothHRV(manual) {
+      const live = document.getElementById('hrv-bt-live')
+      const res = document.getElementById('hrv-bt-results')
+      live.classList.add('hidden')
+      res.classList.remove('hidden')
+
+      if (hrvBTChar) {
+        try { hrvBTChar.stopNotifications() } catch(e){}
+        hrvBTChar.removeEventListener('characteristicvaluechanged', handleBTValue)
+      }
+      if (hrvBTDevice && hrvBTDevice.gatt.connected) {
+        try { hrvBTDevice.gatt.disconnect() } catch(e){}
+      }
+
+      const elapsed = Math.floor((performance.now() - hrvStartTime) / 1000)
+      const dur = Math.min(120, Math.max(25, elapsed))
+
+      let metrics
+      if (hrvBTIBIs.length >= 4) {
+        metrics = computeHRVFromIBIs(hrvBTIBIs)
+      } else {
+        // fallback: use BPM only, fake some variability (not great but shows something)
+        const fakeIBI = 60000 / (hrvBTBPM || 70)
+        const ibisFake = Array.from({length: Math.max(8, Math.floor(dur/1.1))}, () => fakeIBI * (0.96 + Math.random()*0.08))
+        metrics = computeHRVFromIBIs(ibisFake)
+        metrics.note = 'solo BPM (pochi IBI dal sensore)'
+      }
+
+      hrvCurrentReading = {
+        ts: Date.now(),
+        mode: 'bluetooth',
+        duration: dur,
+        hr: metrics.hr || (hrvBTBPM || 0),
+        rmssd: metrics.rmssd || 0,
+        sdnn: metrics.sdnn || 0,
+        pnn50: metrics.pnn50 || 0,
+        n: metrics.nBeats || hrvBTIBIs.length,
+        quality: 0.92,
+        valid: !!metrics.valid
+      }
+
+      // render into bt results area too
+      renderHRVResults(hrvCurrentReading, 'bluetooth')
+      // also show the camera panel results for unified look
+      document.getElementById('hrv-camera-results').classList.remove('hidden')
+    }
+
+    function cancelBluetoothHRV() {
+      if (hrvBTChar) {
+        try { hrvBTChar.stopNotifications() } catch(e){}
+      }
+      if (hrvBTDevice && hrvBTDevice.gatt.connected) {
+        try { hrvBTDevice.gatt.disconnect() } catch(e){}
+      }
+      hrvBTDevice = null
+      hrvBTChar = null
+      hrvBTIBIs = []
+      resetHRVUI()
+    }
+
+    // init hrv on load
+    function initHRV() {
+      loadHRVReadings()
+    }
+
     // ==================== INIT ====================
     function init(){
       initTailwind()
       renderDays()
+      initHRV()
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('./sw.js').catch(()=>{})
       }

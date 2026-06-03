@@ -1,5 +1,5 @@
 // Greece 8 - Service Worker for offline PWA
-const CACHE_NAME = 'greece8-v2';
+const CACHE_NAME = 'greece8-v3-hrv';
 const CORE_ASSETS = [
   './',
   './index.html',
