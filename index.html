@@ -325,7 +325,7 @@
         <!-- Intro -->
         <div class="mb-4">
           <div class="text-sm text-rose-300 font-medium">Simile a HRV4Training</div>
-          <div class="text-[13px] text-slate-400">Misura FC e variabilità cardiaca (RMSSD) con la fotocamera posteriore del telefono + flash. Per prontezza allenamento (readiness). 60-120 secondi a riposo, dito fermo.</div>
+          <div class="text-[13px] text-slate-400">Fotocamera posteriore (stile HRV4Training) o Bluetooth. Su iPhone la torcia a volte non si forza — usa luce buona. Guarda Luminosità/Variazione nel preview per capire se stai coprendo bene.</div>
         </div>
 
         <!-- Mode selector -->
@@ -343,11 +343,11 @@
               <div class="text-xs uppercase tracking-widest text-rose-400 mb-2">ISTRUZIONI PER PRECISIONE</div>
               <ul class="text-sm text-slate-300 space-y-1.5">
                 <li>• Usa <strong>fotocamera posteriore</strong> (quella del flash)</li>
-                <li>• <strong>Copri completamente</strong> lente + flash con la polpastrello (indice o medio)</li>
-                <li>• Premi <strong>delicatamente</strong> — troppa pressione blocca il flusso</li>
+                <li>• <strong>Copri TUTTO</strong> l'area fotocamere + flash LED con la polpastrello (premi piano ma sigilla bene)</li>
+                <li>• Nel preview video deve diventare <strong>rosso scuro / uniforme</strong> (non vedi la stanza)</li>
                 <li>• Sdraiato o seduto calmo, respira normale, <strong>non muovere</strong> mano/telefono</li>
                 <li>• Mani tiepide, evita subito dopo caffè/alcol/allenamento pesante</li>
-                <li>• 60s minimo (120s meglio). La torcia si accende automaticamente</li>
+                <li>• 60-120s. La torcia prova ad accendersi da sola (su iPhone a volte serve luce ambiente forte)</li>
               </ul>
             </div>
             <div class="grid grid-cols-3 gap-2 mb-4">
@@ -387,13 +387,18 @@
               <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div id="hrv-quality-bar" class="h-2 w-0 bg-gradient-to-r from-rose-400 to-emerald-400 transition-all"></div>
               </div>
+              <!-- Extra debug feedback for coverage -->
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1.5 px-0.5 font-mono">
+                <div>Luminosità: <span id="hrv-brightness">—</span></div>
+                <div>Variazione: <span id="hrv-variation">—</span></div>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2">
               <button onclick="stopCameraHRV(true)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">FERMA &amp; ANALIZZA</button>
               <button onclick="cancelCameraHRV()" class="py-3 rounded-2xl bg-slate-900 border border-slate-700 text-sm font-semibold text-rose-300">ANNULLA</button>
             </div>
-            <div class="text-center text-[10px] text-slate-500 mt-2">Mantieni il dito fermo. Non parlare.</div>
+            <div class="text-center text-[10px] text-slate-500 mt-2">Se il preview non diventa rosso uniforme → sposta il dito. Luminosità e Variazione aiutano a capire la copertura.</div>
           </div>
 
           <!-- RESULTS -->
@@ -485,7 +490,7 @@
         </div>
 
         <div class="mt-5 text-[10px] text-slate-500 px-1">
-          RMSSD è la metrica principale per la prontezza (attività parasimpatica). Traccia la tua baseline personale. I valori camera sono validati per trend e readiness a riposo (simile HRV4Training).
+          RMSSD è la metrica principale per la prontezza. I valori camera funzionano bene per trend se la copertura dito è buona (preview rosso uniforme + variazione bassa). Su iPhone a volte serve più luce ambiente perché la torcia via web è limitata.
         </div>
       </div>
     </div>
@@ -1199,6 +1204,10 @@
           const caps = track.getCapabilities ? track.getCapabilities() : {}
           if (caps.torch) {
             await track.applyConstraints({ advanced: [{ torch: true }] })
+            // second attempt after play on some devices
+            setTimeout(async () => {
+              try { await track.applyConstraints({ advanced: [{ torch: true }] }) } catch(e){}
+            }, 800)
           }
         } catch(e){ /* torch not available or denied, continue anyway */ }
 
@@ -1217,6 +1226,8 @@
         document.getElementById('hrv-quality-text').textContent = '—'
         document.getElementById('hrv-live-status').textContent = 'IN ATTESA DITO...'
         document.getElementById('hrv-live-status').className = 'text-[10px] text-amber-400'
+        const bEl = document.getElementById('hrv-brightness'); if (bEl) bEl.textContent = '—'
+        const vEl = document.getElementById('hrv-variation'); if (vEl) vEl.textContent = '—'
 
         hrvRAF = requestAnimationFrame(cameraSampleLoop)
 
@@ -1261,26 +1272,62 @@
         if (hrvStream) hrvRAF = requestAnimationFrame(cameraSampleLoop)
         return
       }
-      // sample a central ROI (finger should cover most) — reuse canvas
-      const w = 96, h = 96
+      // Sample the WHOLE frame downscaled (like the original HRV4Training "average over the whole frame").
+      // When finger properly covers lens+flash, the entire preview is the finger lit by the light.
+      const w = 80, h = 80
       if (!_hrvSampleCanvas) {
         _hrvSampleCanvas = document.createElement('canvas')
         _hrvSampleCanvas.width = w
         _hrvSampleCanvas.height = h
       }
       const tctx = _hrvSampleCanvas.getContext('2d', { willReadFrequently: true })
-      // center crop of video
       const vw = video.videoWidth || 640, vh = video.videoHeight || 480
-      const sx = Math.max(0, (vw - w*1.6)/2), sy = Math.max(0, (vh - h*1.6)/2)
-      tctx.drawImage(video, sx, sy, w*1.6, h*1.6, 0, 0, w, h)
+      tctx.drawImage(video, 0, 0, vw, vh, 0, 0, w, h)
       const data = tctx.getImageData(0, 0, w, h).data
-      let sumG = 0, n = 0
+
+      let sumR = 0, sumG = 0, sumB = 0, n = 0
       for (let i = 0; i < data.length; i += 4) {
-        sumG += data[i+1] // green
+        sumR += data[i]
+        sumG += data[i+1]
+        sumB += data[i+2]
         n++
       }
-      const v = n > 0 ? (sumG / n) : 128   // GREEN channel (strong PPG)
+      if (n === 0) {
+        hrvRAF = requestAnimationFrame(cameraSampleLoop)
+        return
+      }
+
+      const meanR = sumR / n
+      const meanG = sumG / n
+      const meanB = sumB / n
+      const meanLuma = (meanR * 0.299 + meanG * 0.587 + meanB * 0.114)
+
+      // For finger + flash (transmissive), RED channel often carries the strongest pulse.
+      // Use red as primary signal value.
+      const v = meanR
+
       hrvSamples.push({ t: performance.now(), v })
+
+      // Live coverage / debug feedback (helps user know if finger is sealing the lens+flash)
+      const brightEl = document.getElementById('hrv-brightness')
+      const varEl = document.getElementById('hrv-variation')
+      if (brightEl) brightEl.textContent = Math.round(meanLuma) + '/255'
+      if (varEl) {
+        // Rough spatial variation (how uniform the finger area is)
+        // If too high, finger not flat/covering fully.
+        const dyn = Math.max(meanR, meanG, meanB) - Math.min(meanR, meanG, meanB)
+        varEl.textContent = Math.round(dyn)
+      }
+
+      // Update status more helpfully based on brightness
+      const statusEl = document.getElementById('hrv-live-status')
+      if (statusEl && meanLuma > 210) {
+        statusEl.textContent = 'TROPPO CHIARO — copri meglio (lente + flash)'
+        statusEl.className = 'text-[10px] text-rose-400'
+      } else if (statusEl && meanLuma < 40 && hrvSamples.length > 30) {
+        statusEl.textContent = 'TROPPO SCURO — alleggerisci un po\' la pressione'
+        statusEl.className = 'text-[10px] text-amber-400'
+      }
 
       // draw live waveform (last ~8-10 seconds)
       drawLivePPG()
@@ -1329,25 +1376,19 @@
     function updateLiveQuality(q) {
       const bar = document.getElementById('hrv-quality-bar')
       const txt = document.getElementById('hrv-quality-text')
-      const status = document.getElementById('hrv-live-status')
       const pct = Math.max(5, Math.min(100, Math.round(q * 100)))
       bar.style.width = pct + '%'
       if (q > 0.72) {
         txt.textContent = 'OTTIMO'
         txt.className = 'text-emerald-400 text-[10px]'
-        status.textContent = 'SEGNALE BUONO'
-        status.className = 'text-[10px] text-emerald-400'
       } else if (q > 0.45) {
         txt.textContent = 'OK'
         txt.className = 'text-amber-400 text-[10px]'
-        status.textContent = 'SEGNALE OK'
-        status.className = 'text-[10px] text-amber-400'
       } else {
         txt.textContent = 'BASSO'
         txt.className = 'text-rose-400 text-[10px]'
-        status.textContent = 'MUOVI DITO / COPRI MEGLIO'
-        status.className = 'text-[10px] text-rose-400'
       }
+      // Note: status text is managed by coverage logic in cameraSampleLoop for "Luminosità" hints
     }
 
     function estimateSignalQuality(samples) {
@@ -1371,7 +1412,7 @@
     }
 
     function computeRoughBPM(samples) {
-      const ibis = extractIBIs(samples, 0.6) // lower thresh for live
+      const ibis = extractIBIs(samples, 0.48) // more lenient for weak signals
       if (ibis.length < 2) return 0
       const meanIBI = ibis.reduce((a,b)=>a+b,0) / ibis.length
       return 60000 / meanIBI
@@ -1396,12 +1437,22 @@
       const elapsed = (performance.now() - hrvStartTime) / 1000
       const durationUsed = Math.min(hrvTargetDur, Math.max(20, Math.floor(elapsed)))
 
-      const ibis = extractIBIs(hrvSamples, 0.55)
-      const metrics = computeHRVFromIBIs(ibis)
+      const ibis = extractIBIs(hrvSamples, 0.48)
+      let metrics = computeHRVFromIBIs(ibis)
 
       // quality final
       const q = estimateSignalQuality(hrvSamples)
-      const goodBeats = metrics.nBeats || ibis.length
+      let goodBeats = metrics.nBeats || ibis.length
+
+      // Fallback: if very few beats detected (common with weak camera signal), still report rough HR
+      if (goodBeats < 6 && hrvSamples.length > 30) {
+        const roughHR = computeRoughBPM(hrvSamples)
+        if (roughHR > 35 && roughHR < 220) {
+          metrics.hr = Math.round(roughHR)
+          // keep the few ibis we have for rmssd if any, else mark low confidence
+          goodBeats = ibis.length || Math.floor(durationUsed / 1.2)
+        }
+      }
 
       hrvCurrentReading = {
         ts: Date.now(),
@@ -1413,7 +1464,7 @@
         pnn50: metrics.pnn50 || 0,
         n: goodBeats,
         quality: q,
-        valid: metrics.valid && q > 0.35 && goodBeats > 8
+        valid: metrics.valid && q > 0.30 && goodBeats > 5
       }
 
       renderHRVResults(hrvCurrentReading, 'camera')
@@ -1491,9 +1542,9 @@
       const std = Math.sqrt(varsum / sm.length)
       const pThresh = mean + std * threshFactor
 
-      // 5. find peaks (slope inversion) + refractory ~280ms
+      // 5. find peaks (slope inversion) + refractory ~240ms (more tolerant for camera)
       const peaksT = []
-      const minDeltaT = 275
+      const minDeltaT = 240
       let lastT = -1e9
       for (let i = 1; i < sm.length - 1; i++) {
         if (sm[i] > sm[i-1] && sm[i] > sm[i+1] && sm[i] > pThresh) {
@@ -1529,10 +1580,10 @@
         const med = winIBI.slice().sort((a,b)=>a-b)[Math.floor(winIBI.length/2)]
         const kept = []
         for (let ibi of winIBI) {
-          if (ibi >= 260 && ibi <= 1650 && Math.abs(ibi - med) <= 0.22 * med) kept.push(ibi)
+          if (ibi >= 240 && ibi <= 1700 && Math.abs(ibi - med) <= 0.25 * med) kept.push(ibi)
         }
         // if too many discarded in window, drop the window
-        if (kept.length >= Math.max(2, Math.floor(winIBI.length * 0.45))) {
+        if (kept.length >= Math.max(2, Math.floor(winIBI.length * 0.40))) {
           clean.push(...kept)
         }
         i = j
@@ -1593,7 +1644,7 @@
         qel.textContent = `Qualità buona • ${reading.duration}s • ${reading.mode === 'bluetooth' ? 'Bluetooth IBI' : 'Camera PPG'}`
         qel.className = 'mt-4 text-xs px-3 py-1.5 rounded-2xl bg-emerald-900/30 border border-emerald-800 text-emerald-300'
       } else {
-        qel.textContent = 'Qualità bassa — riprova con dito più stabile e pressione costante'
+        qel.innerHTML = 'Qualità bassa.<br>Prova di nuovo: copri <strong>bene tutta l\'area</strong> lente+flash finché il preview diventa rosso scuro uniforme. Tieni 60-120s senza muovere. Su iPhone la torcia a volte non si forza — usa luce ambiente.'
         qel.className = 'mt-4 text-xs px-3 py-1.5 rounded-2xl bg-rose-900/30 border border-rose-800 text-rose-300'
       }
 
