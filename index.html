@@ -12,6 +12,8 @@
   <!-- Leaflet per la cartina Cibo -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Supabase client for auth + DB (Google OAuth support) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
@@ -615,33 +617,45 @@
             </div>
           </div>
 
-          <!-- Supabase sync (instead of or in addition to manual export) -->
-          <details class="mb-3 text-xs bg-slate-900 border border-slate-700 rounded-2xl p-3">
-            <summary class="cursor-pointer font-medium text-rose-300">Supabase (invia letture + contesto)</summary>
+          <!-- Supabase with Google Auth + MCP ready -->
+          <details class="mb-3 text-xs bg-slate-900 border border-slate-700 rounded-2xl p-3" id="supabase-details">
+            <summary class="cursor-pointer font-medium text-rose-300">Supabase (Google login + dati per MCP/Lucia)</summary>
             <div class="mt-2 space-y-2">
-              <input id="sb-url" placeholder="https://tuoprogetto.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
-              <input id="sb-key" placeholder="eyJ... anon public key" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
               <div class="flex gap-2">
-                <button onclick="saveSupabaseConfigFromUI()" class="flex-1 py-1 rounded bg-slate-800 text-xs">Salva credenziali</button>
-                <button onclick="syncAllHRVToSupabase()" class="flex-1 py-1 rounded bg-emerald-700 text-xs">Sincronizza tutto</button>
+                <input id="sb-url" placeholder="https://tuoprogetto.supabase.co" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+                <input id="sb-anon-key" placeholder="anon public key" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
               </div>
-              <div class="text-[10px] text-slate-500">I dati HRV + context (risposte questionario) vanno su tabella <code>hrv_readings</code>. Funziona offline. Crea la tabella in Supabase con:</div>
-              <pre class="text-[9px] bg-black p-1 rounded mt-1 overflow-auto">CREATE TABLE hrv_readings (
+              <div class="flex gap-2">
+                <button onclick="saveSupabaseConfigFromUI()" class="flex-1 py-1 rounded bg-slate-800 text-xs">Salva config</button>
+                <button onclick="loginWithGoogle()" class="flex-1 py-1 rounded bg-blue-600 text-xs text-white">Login con Google</button>
+                <button onclick="logoutSupabase()" class="px-2 py-1 rounded bg-slate-700 text-xs">Logout</button>
+              </div>
+              <div id="supabase-user" class="text-[10px] text-emerald-400 min-h-[1em]"></div>
+
+              <div class="flex gap-2">
+                <button onclick="syncAllHRVToSupabase()" class="flex-1 py-1 rounded bg-emerald-700 text-xs">Sincronizza tutto su Supabase</button>
+              </div>
+
+              <div class="text-[10px] text-slate-500">
+                I dati (incluse le risposte context) vanno in <code>hrv_readings</code> con user_id.
+                Una volta loggato con Google, le insert usano il tuo utente (RLS sicura).
+                Per consumare via MCP in Lucia: aggiungi tool che querya Supabase con le tue credenziali (service role o OAuth).
+              </div>
+
+              <div class="text-[9px] text-slate-400">SQL tabella (copia in Supabase SQL Editor):</div>
+              <pre class="text-[8px] bg-black p-1 rounded overflow-auto">CREATE TABLE hrv_readings (
   ts bigint primary key,
-  hr int,
-  rmssd int,
-  sdnn int,
-  duration int,
-  mode text,
-  valid boolean,
+  user_id uuid references auth.users not null,
+  hr int, rmssd int, sdnn int,
+  duration int, mode text, valid boolean,
   context jsonb,
   created_at timestamptz default now()
 );
-
--- RLS (adatta come vuoi)
 alter table hrv_readings enable row level security;
-create policy "anon insert" on hrv_readings for insert to anon with check (true);
-create policy "anon select" on hrv_readings for select to anon using (true);</pre>
+create policy "user owns data" on hrv_readings
+  for all to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);</pre>
             </div>
           </details>
           <div id="hrv-history" class="space-y-1.5 text-sm"></div>
@@ -1279,7 +1293,9 @@ create policy "anon select" on hrv_readings for select to anon using (true);</pr
       setHRVMode('camera')
       renderHRVHistory()
       drawHRVTrend()
-      loadSupabaseConfig()  // popola gli input Supabase se salvati
+      loadSupabaseConfig()
+      initSupabaseClient()
+      initSupabaseAuthUI()
     }
     function closeHRVSection() {
       cancelCameraHRV()
@@ -2142,35 +2158,115 @@ create policy "anon select" on hrv_readings for select to anon using (true);</pr
       showToast('Esportato JSON con contesto per Lucia')
     }
 
-    // === Supabase integration (replaces pure manual export if wanted) ===
+    // === Supabase with Google Auth (for secure per-user data + MCP consumption) ===
+    let supabaseClient = null;
+
+    function initSupabaseClient() {
+      if (supabaseClient) return supabaseClient;
+      const cfg = loadSupabaseConfig();
+      if (!cfg.url || !cfg.anonKey || !window.supabase) {
+        return null;
+      }
+      supabaseClient = window.supabase.createClient(cfg.url, cfg.anonKey, {
+        auth: {
+          detectSessionInUrl: true,
+          persistSession: true,
+          autoRefreshToken: true,
+        }
+      });
+      // Listen for auth changes to update UI
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        updateSupabaseUserUI(session);
+      });
+      return supabaseClient;
+    }
+
     function loadSupabaseConfig() {
       try {
-        const cfg = JSON.parse(localStorage.getItem('greece8_supabase') || '{}')
-        const urlIn = document.getElementById('sb-url')
-        const keyIn = document.getElementById('sb-key')
-        if (urlIn && cfg.url) urlIn.value = cfg.url
-        if (keyIn && cfg.key) keyIn.value = cfg.key
-        return cfg
-      } catch { return {} }
+        const cfg = JSON.parse(localStorage.getItem('greece8_supabase') || '{}');
+        const urlIn = document.getElementById('sb-url');
+        const keyIn = document.getElementById('sb-anon-key');
+        if (urlIn && cfg.url) urlIn.value = cfg.url;
+        if (keyIn && cfg.anonKey) keyIn.value = cfg.anonKey;
+        return cfg;
+      } catch { return {}; }
     }
 
     function saveSupabaseConfigFromUI() {
-      const url = document.getElementById('sb-url').value.trim()
-      const key = document.getElementById('sb-key').value.trim()
-      if (!url || !key) {
-        alert('Inserisci URL e anon key di Supabase')
-        return
+      const url = document.getElementById('sb-url').value.trim();
+      const anonKey = document.getElementById('sb-anon-key').value.trim();
+      if (!url || !anonKey) {
+        alert('Inserisci URL del progetto e anon public key di Supabase');
+        return;
       }
-      localStorage.setItem('greece8_supabase', JSON.stringify({ url, key }))
-      showToast('Credenziali Supabase salvate')
+      localStorage.setItem('greece8_supabase', JSON.stringify({ url, anonKey }));
+      showToast('Config Supabase salvata (anon key per client init)');
+      // re-init client
+      supabaseClient = null;
+      initSupabaseClient();
+    }
+
+    async function updateSupabaseUserUI(session = null) {
+      const el = document.getElementById('supabase-user');
+      if (!el) return;
+      const client = initSupabaseClient();
+      if (!client) {
+        el.textContent = 'Configura URL + anon key prima';
+        return;
+      }
+      if (!session) {
+        const { data } = await client.auth.getSession();
+        session = data.session;
+      }
+      if (session && session.user) {
+        el.innerHTML = `✅ Loggato come <strong>${session.user.email}</strong> (Google)`;
+        // optionally auto sync or load data
+      } else {
+        el.textContent = 'Non loggato — clicca Login con Google';
+      }
+    }
+
+    async function loginWithGoogle() {
+      const client = initSupabaseClient();
+      if (!client) {
+        alert('Prima salva URL e anon key di Supabase');
+        return;
+      }
+      const { error } = await client.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + window.location.pathname
+        }
+      });
+      if (error) {
+        alert('Errore login Google: ' + error.message);
+      }
+    }
+
+    async function logoutSupabase() {
+      const client = initSupabaseClient();
+      if (client) {
+        await client.auth.signOut();
+      }
+      const el = document.getElementById('supabase-user');
+      if (el) el.textContent = 'Disconnesso';
+      showToast('Logout effettuato');
     }
 
     async function sendReadingToSupabase(reading) {
-      const cfg = loadSupabaseConfig()
-      if (!cfg.url || !cfg.key) return false
+      const client = initSupabaseClient();
+      if (!client) return false;
+
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) {
+        // Se non loggato, non inviamo (per RLS sicura con user_id). L'utente deve fare login.
+        console.warn('Utente non autenticato con Google - salto invio Supabase (usa login per salvare con user_id)');
+        return false;
+      }
 
       const payload = {
         ts: reading.ts,
+        user_id: user.id,
         hr: reading.hr,
         rmssd: reading.rmssd,
         sdnn: reading.sdnn,
@@ -2180,55 +2276,63 @@ create policy "anon select" on hrv_readings for select to anon using (true);</pr
         context: reading.context || null,
         quality: reading.quality || null,
         created_at: new Date(reading.ts).toISOString()
-      }
+      };
 
-      try {
-        const res = await fetch(`${cfg.url}/rest/v1/hrv_readings?on_conflict=ts`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': cfg.key,
-            'Authorization': `Bearer ${cfg.key}`,
-            'Prefer': 'resolution=merge-duplicates'
-          },
-          body: JSON.stringify(payload)
-        })
-        if (!res.ok) {
-          console.warn('Supabase insert warning', await res.text())
-        }
-        return true
-      } catch (e) {
-        console.warn('Supabase send failed (offline?)', e)
-        return false
+      const { error } = await client
+        .from('hrv_readings')
+        .upsert(payload, { onConflict: 'ts' });
+
+      if (error) {
+        console.warn('Supabase upsert error', error);
+        return false;
       }
+      return true;
     }
 
     async function syncAllHRVToSupabase() {
-      const cfg = loadSupabaseConfig()
-      if (!cfg.url || !cfg.key) {
-        alert('Prima configura URL e anon key di Supabase')
-        return
+      const client = initSupabaseClient();
+      if (!client) {
+        alert('Configura prima URL + anon key');
+        return;
+      }
+      const { data: { user } } = await client.auth.getUser();
+      if (!user) {
+        alert('Devi fare Login con Google prima di sincronizzare (per associare user_id e rispettare RLS)');
+        return;
       }
       if (!hrvReadings.length) {
-        showToast('Nessuna lettura da sincronizzare')
-        return
+        showToast('Nessuna lettura da sincronizzare');
+        return;
       }
 
-      let sent = 0
+      let sent = 0;
       for (const r of hrvReadings) {
-        const ok = await sendReadingToSupabase(r)
-        if (ok) sent++
+        const ok = await sendReadingToSupabase(r);
+        if (ok) sent++;
       }
-      showToast(`Sincronizzate ${sent}/${hrvReadings.length} letture su Supabase`)
+      showToast(`Sincronizzate ${sent}/${hrvReadings.length} letture su Supabase`);
+      // optionally refresh UI
     }
 
-    // Auto-send on save if Supabase configured
-    const _origSave = saveCurrentHRVReading
+    // Auto-send on save if logged in
+    const _origSave = saveCurrentHRVReading;
     saveCurrentHRVReading = async function() {
-      _origSave.call(this)  // original saves local + updates UI
-      // fire and forget to Supabase
+      _origSave.call(this);
       if (hrvCurrentReading) {
-        sendReadingToSupabase(hrvCurrentReading)
+        // non blocchiamo l'UI
+        sendReadingToSupabase(hrvCurrentReading).catch(() => {});
+      }
+    };
+
+    // Inizializza auth UI quando si apre la sezione HRV
+    async function initSupabaseAuthUI() {
+      const client = initSupabaseClient();
+      if (!client) return;
+      await updateSupabaseUserUI();
+      // Se c'è hash dal redirect OAuth, getSession lo gestisce
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        updateSupabaseUserUI(session);
       }
     }
 
@@ -2379,6 +2483,7 @@ create policy "anon select" on hrv_readings for select to anon using (true);</pr
       initTailwind()
       renderDays()
       initHRV()
+      initSupabaseClient() // early for OAuth redirect handling
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('./sw.js').catch(()=>{})
       }
