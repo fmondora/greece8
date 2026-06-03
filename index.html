@@ -609,9 +609,27 @@
         <div class="mt-6">
           <div class="flex items-center justify-between mb-2 px-1">
             <div class="text-sm font-semibold text-rose-300">Storico &amp; Baseline</div>
-            <button onclick="clearHRVHistory()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">cancella</button>
-            <button onclick="exportHRVForLucia()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-rose-300">esporta JSON per Lucia</button>
+            <div class="flex gap-1">
+              <button onclick="clearHRVHistory()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">cancella</button>
+              <button onclick="exportHRVForLucia()" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-rose-300">esporta JSON</button>
+            </div>
           </div>
+
+          <!-- Supabase sync (instead of or in addition to manual export) -->
+          <details class="mb-3 text-xs bg-slate-900 border border-slate-700 rounded-2xl p-3">
+            <summary class="cursor-pointer font-medium text-rose-300">Supabase (invia letture + contesto)</summary>
+            <div class="mt-2 space-y-2">
+              <input id="sb-url" placeholder="https://tuoprogetto.supabase.co" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+              <input id="sb-key" placeholder="eyJ... anon public key" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+              <div class="flex gap-2">
+                <button onclick="saveSupabaseConfigFromUI()" class="flex-1 py-1 rounded bg-slate-800 text-xs">Salva credenziali</button>
+                <button onclick="syncAllHRVToSupabase()" class="flex-1 py-1 rounded bg-emerald-700 text-xs">Sincronizza tutto</button>
+              </div>
+              <div class="text-[10px] text-slate-500">I dati HRV + context (risposte questionario) vanno su tabella <code>hrv_readings</code>. Funziona offline. Crea la tabella in Supabase con:</div>
+              <pre class="text-[9px] bg-black p-1 rounded mt-1 overflow-auto">CREATE TABLE hrv_readings ( ts bigint primary key, hr int, rmssd int, sdnn int, duration int, mode text, valid boolean, context jsonb, created_at timestamptz );</pre>
+              <div class="text-[9px] text-emerald-400">RLS: abilita insert/select per anon (o usa policy con user_id se vuoi auth).</div>
+            </div>
+          </details>
           <div id="hrv-history" class="space-y-1.5 text-sm"></div>
           <canvas id="hrv-trend-canvas" class="mt-3 w-full rounded-2xl bg-slate-900 border border-slate-700" height="90" width="640"></canvas>
           <div class="text-[10px] text-center text-slate-500 mt-1">RMSSD nel tempo (baseline = media ultimi 7)</div>
@@ -1247,6 +1265,7 @@
       setHRVMode('camera')
       renderHRVHistory()
       drawHRVTrend()
+      loadSupabaseConfig()  // popola gli input Supabase se salvati
     }
     function closeHRVSection() {
       cancelCameraHRV()
@@ -2107,6 +2126,96 @@
       a.click()
       URL.revokeObjectURL(url)
       showToast('Esportato JSON con contesto per Lucia')
+    }
+
+    // === Supabase integration (replaces pure manual export if wanted) ===
+    function loadSupabaseConfig() {
+      try {
+        const cfg = JSON.parse(localStorage.getItem('greece8_supabase') || '{}')
+        const urlIn = document.getElementById('sb-url')
+        const keyIn = document.getElementById('sb-key')
+        if (urlIn && cfg.url) urlIn.value = cfg.url
+        if (keyIn && cfg.key) keyIn.value = cfg.key
+        return cfg
+      } catch { return {} }
+    }
+
+    function saveSupabaseConfigFromUI() {
+      const url = document.getElementById('sb-url').value.trim()
+      const key = document.getElementById('sb-key').value.trim()
+      if (!url || !key) {
+        alert('Inserisci URL e anon key di Supabase')
+        return
+      }
+      localStorage.setItem('greece8_supabase', JSON.stringify({ url, key }))
+      showToast('Credenziali Supabase salvate')
+    }
+
+    async function sendReadingToSupabase(reading) {
+      const cfg = loadSupabaseConfig()
+      if (!cfg.url || !cfg.key) return false
+
+      const payload = {
+        ts: reading.ts,
+        hr: reading.hr,
+        rmssd: reading.rmssd,
+        sdnn: reading.sdnn,
+        duration: reading.duration,
+        mode: reading.mode,
+        valid: reading.valid,
+        context: reading.context || null,
+        quality: reading.quality || null,
+        created_at: new Date(reading.ts).toISOString()
+      }
+
+      try {
+        const res = await fetch(`${cfg.url}/rest/v1/hrv_readings`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': cfg.key,
+            'Authorization': `Bearer ${cfg.key}`,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify(payload)
+        })
+        if (!res.ok) {
+          console.warn('Supabase insert warning', await res.text())
+        }
+        return true
+      } catch (e) {
+        console.warn('Supabase send failed (offline?)', e)
+        return false
+      }
+    }
+
+    async function syncAllHRVToSupabase() {
+      const cfg = loadSupabaseConfig()
+      if (!cfg.url || !cfg.key) {
+        alert('Prima configura URL e anon key di Supabase')
+        return
+      }
+      if (!hrvReadings.length) {
+        showToast('Nessuna lettura da sincronizzare')
+        return
+      }
+
+      let sent = 0
+      for (const r of hrvReadings) {
+        const ok = await sendReadingToSupabase(r)
+        if (ok) sent++
+      }
+      showToast(`Sincronizzate ${sent}/${hrvReadings.length} letture su Supabase`)
+    }
+
+    // Auto-send on save if Supabase configured
+    const _origSave = saveCurrentHRVReading
+    saveCurrentHRVReading = async function() {
+      _origSave.call(this)  // original saves local + updates UI
+      // fire and forget to Supabase
+      if (hrvCurrentReading) {
+        sendReadingToSupabase(hrvCurrentReading)
+      }
     }
 
     // ---------- BLUETOOTH (Web Bluetooth) ----------
