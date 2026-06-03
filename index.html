@@ -343,11 +343,11 @@
               <div class="text-xs uppercase tracking-widest text-rose-400 mb-2">ISTRUZIONI PER PRECISIONE</div>
               <ul class="text-sm text-slate-300 space-y-1.5">
                 <li>• <strong>IMPORTANTE:</strong> deve usare la fotocamera POSTERIORE (quella con il flash). Se vedi la tua faccia → è quella frontale sbagliata.</li>
-                <li>• <strong>Copri TUTTO</strong> l'area fotocamere + flash LED con la polpastrello (premi piano ma sigilla bene)</li>
-                <li>• Nel preview video deve diventare <strong>rosso scuro / uniforme</strong> (non vedi la stanza)</li>
+                <li>• <strong>Quale lente?</strong> Copri <strong>tutto il modulo fotocamera sul retro</strong>: il dito deve stare sopra il <strong>flash</strong> (piccolo LED bianco/giallo) + almeno una lente (la principale va benissimo). Su iPhone con 2-3 lenti copri l'intera area del "bump".</li>
+                <li>• <strong>Copri bene</strong> con la polpastrello (indice o medio), premi piano ma sigilla completamente (non deve entrare luce esterna).</li>
+                <li>• Nel preview video deve diventare <strong>rosso scuro / uniforme</strong> (non vedi la stanza o il tuo viso).</li>
                 <li>• Sdraiato o seduto calmo, respira normale, <strong>non muovere</strong> mano/telefono</li>
-                <li>• Mani tiepide, evita subito dopo caffè/alcol/allenamento pesante</li>
-                <li>• 60-120s. La torcia prova ad accendersi da sola (su iPhone a volte serve luce ambiente forte)</li>
+                <li>• Mani tiepide. 60-120s. La torcia prova ad accendersi (su iPhone a volte serve luce ambiente).</li>
               </ul>
             </div>
             <div class="grid grid-cols-3 gap-2 mb-4">
@@ -362,7 +362,7 @@
             <div class="relative mb-3">
               <video id="hrv-video" class="w-full rounded-3xl border border-slate-700 bg-black" style="max-height: 280px; transform: scaleX(1); object-fit: cover;" playsinline muted></video>
               <div id="hrv-guide" class="absolute inset-0 rounded-3xl pointer-events-none guide-overlay flex items-center justify-center">
-                <div class="text-center text-white text-xs font-medium tracking-widest px-3">COPRI LENTE + FLASH<br><span class="opacity-75">il preview deve diventare rosso scuro uniforme</span></div>
+                <div class="text-center text-white text-xs font-medium tracking-widest px-3 leading-tight">COPRI TUTTO IL MODULO<br>flash + lenti (non una sola)<br><span class="opacity-75">preview → rosso scuro uniforme</span></div>
               </div>
             </div>
 
@@ -404,7 +404,7 @@
               <button onclick="stopCameraHRV(true)" class="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-sm font-semibold">FERMA &amp; ANALIZZA</button>
               <button onclick="cancelCameraHRV()" class="py-3 rounded-2xl bg-slate-900 border border-slate-700 text-sm font-semibold text-rose-300">ANNULLA</button>
             </div>
-            <div class="text-center text-[10px] text-slate-500 mt-2">Se il preview non diventa rosso uniforme → sposta il dito. Luminosità e Variazione aiutano a capire la copertura.</div>
+            <div class="text-center text-[10px] text-slate-500 mt-2">Flash + lenti devono essere sotto il dito. Se Luminosità resta alta o non cambia → non stai coprendo il flash.</div>
           </div>
 
           <!-- RESULTS -->
