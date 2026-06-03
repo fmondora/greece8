@@ -39,6 +39,7 @@
     .ppg-canvas { background: #0b111f; border-radius: 12px; }
     .hrv-metric { font-variant-numeric: tabular-nums; }
     .guide-overlay { background: radial-gradient(circle at center, rgba(255,255,255,0.15) 30%, rgba(0,0,0,0.45) 60%); }
+    .ctx-btn.active { background-color: #9f1239; border-color: #e11d48; color: #fff; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen pb-12">
@@ -438,6 +439,124 @@
               <div id="hrv-res-interpret" class="mt-3 text-sm text-slate-300"></div>
 
               <div id="hrv-res-readiness" class="mt-3 text-sm font-medium"></div>
+
+              <!-- Contestual questions - HRVTraining style + Lucia Council wisdom -->
+              <div id="hrv-context" class="mt-4 border-t border-slate-700 pt-4">
+                <div class="text-xs uppercase tracking-widest text-rose-400 mb-2 flex items-center gap-2">
+                  CONTESTO (stile HRVTraining + Council Lucia)
+                  <span class="text-[10px] normal-case text-slate-500 font-normal">opzionale ma potente per i trend</span>
+                </div>
+                <div class="grid grid-cols-1 gap-3 text-sm">
+                  <!-- Sleep -->
+                  <div>
+                    <div class="text-[10px] text-slate-400 mb-1">Qualità sonno (Ayurveda: routine + Agni; TCM: Shen; FuncMed: recupero)</div>
+                    <div class="flex gap-1 flex-wrap" id="ctx-sleep">
+                      <button data-val="1" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">1 pessimo</button>
+                      <button data-val="3" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">3 scarso</button>
+                      <button data-val="5" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">5 ok</button>
+                      <button data-val="7" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">7 buono</button>
+                      <button data-val="9" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">9 ottimo</button>
+                    </div>
+                  </div>
+
+                  <!-- Mental energy / stress -->
+                  <div>
+                    <div class="text-[10px] text-slate-400 mb-1">Energia mentale / stress (TCM: Shen; Ayurveda: Vata/Pitta; Func: HPA)</div>
+                    <div class="flex gap-1 flex-wrap" id="ctx-mental">
+                      <button data-val="high" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">Alta / calmo</button>
+                      <button data-val="med" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">Media</button>
+                      <button data-val="low" class="ctx-btn px-2 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">Bassa / stress</button>
+                    </div>
+                  </div>
+
+                  <!-- Fatigue / soreness -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Fatica generale</div>
+                      <div class="flex gap-1" id="ctx-fatigue">
+                        <button data-val="1" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">1</button>
+                        <button data-val="4" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">4</button>
+                        <button data-val="7" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">7</button>
+                        <button data-val="10" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">10 esausto</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Dolori muscolari</div>
+                      <div class="flex gap-1" id="ctx-soreness">
+                        <button data-val="0" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">0</button>
+                        <button data-val="3" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">3</button>
+                        <button data-val="6" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">6</button>
+                        <button data-val="9" class="ctx-btn flex-1 px-1 py-0.5 rounded bg-slate-800 border border-slate-600 text-xs">9+</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Alcohol, travel, sick -->
+                  <div class="grid grid-cols-3 gap-2">
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Alcol ieri (Pitta/Kapha, damp)</div>
+                      <div class="flex gap-1" id="ctx-alcohol">
+                        <button data-val="no" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">no</button>
+                        <button data-val="little" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">poco</button>
+                        <button data-val="yes" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">sì</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Viaggio / jetlag (Vata, Qi disrupt)</div>
+                      <div class="flex gap-1" id="ctx-travel">
+                        <button data-val="no" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">no</button>
+                        <button data-val="light" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">lieve</button>
+                        <button data-val="heavy" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">pesante</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Malattia / sintomi (immunità, ama)</div>
+                      <div class="flex gap-1" id="ctx-sick">
+                        <button data-val="no" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">no</button>
+                        <button data-val="mild" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">lieve</button>
+                        <button data-val="yes" class="ctx-btn flex-1 px-1 py-0.5 text-[10px] rounded bg-slate-800 border border-slate-600">sì</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Digestion + mood -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Digestione (Agni, assimilazione, Spleen)</div>
+                      <div class="flex gap-1 flex-wrap" id="ctx-digestion">
+                        <button data-val="good" class="ctx-btn px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">buona</button>
+                        <button data-val="irreg" class="ctx-btn px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">irregolare</button>
+                        <button data-val="heavy" class="ctx-btn px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">pesante</button>
+                        <button data-val="bad" class="ctx-btn px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">problemi</button>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="text-[10px] text-slate-400 mb-1">Umore prevalente (5 elementi TCM, dosha)</div>
+                      <div class="flex gap-1 flex-wrap" id="ctx-mood">
+                        <button data-val="calm" class="ctx-btn px-1.5 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">calmo</button>
+                        <button data-val="irrit" class="ctx-btn px-1.5 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">irritabile</button>
+                        <button data-val="anx" class="ctx-btn px-1.5 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">ansioso</button>
+                        <button data-val="low" class="ctx-btn px-1.5 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">giù</button>
+                        <button data-val="joy" class="ctx-btn px-1.5 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">gioioso</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="text-[10px] text-slate-400 mb-1">Piante / adattogeni / integratori (intelligenza vegetale, Rasayana)</div>
+                    <div class="flex gap-1" id="ctx-plants">
+                      <button data-val="no" class="ctx-btn flex-1 px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">no</button>
+                      <button data-val="yes" class="ctx-btn flex-1 px-2 py-0.5 text-xs rounded bg-slate-800 border border-slate-600">sì (nota sotto)</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="text-[10px] text-slate-400 mb-1">Note libere (ciò che il corpo sta dicendo oggi)</div>
+                    <input id="ctx-notes" type="text" placeholder="es. ho dormito poco per il viaggio, ma mi sento presente" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+                  </div>
+                </div>
+                <div class="text-[9px] text-slate-500 mt-2">Council Lucia suggerisce di tracciare: Agni/digestione (Ayur), Shen/emozioni e Qi (TCM), infiammazione/gut/energy (FuncMed), relazione con piante e stato interiore (Sciamano). Questi tag permettono correlazioni potenti nei review.</div>
+              </div>
             </div>
 
             <div class="flex gap-2">
@@ -1549,11 +1668,13 @@
       // if bt was used, also reset
       document.getElementById('hrv-bt-results').classList.add('hidden')
       document.getElementById('hrv-bt-instr').classList.remove('hidden')
+      clearHRVContextForm()
     }
 
     function closeHRVResults() {
       document.getElementById('hrv-camera-results').classList.add('hidden')
       document.getElementById('hrv-bt-results').classList.add('hidden')
+      clearHRVContextForm()
       // go back to instr for the active mode
       if (hrvMode === 'camera') {
         document.getElementById('hrv-camera-instr').classList.remove('hidden')
@@ -1696,6 +1817,11 @@
       const resPanel = document.getElementById('hrv-camera-results')
       resPanel.classList.remove('hidden')
 
+      // show and setup context form (HRVTraining style + Lucia council)
+      const ctxDiv = document.getElementById('hrv-context')
+      if (ctxDiv) ctxDiv.style.display = ''
+      setupHRVContextForm()
+
       document.getElementById('hrv-res-hr').textContent = reading.hr || '—'
       document.getElementById('hrv-res-rmssd').textContent = reading.rmssd || '—'
       document.getElementById('hrv-res-sdnn').textContent = reading.sdnn || '—'
@@ -1758,6 +1884,11 @@
 
     function saveCurrentHRVReading() {
       if (!hrvCurrentReading) return
+      // attach context answers if present
+      const ctx = getHRVContextAnswers()
+      if (Object.keys(ctx).length > 0) {
+        hrvCurrentReading.context = ctx
+      }
       hrvReadings.unshift(hrvCurrentReading)
       if (hrvReadings.length > 60) hrvReadings.length = 60
       saveHRVReadings()
@@ -1765,6 +1896,88 @@
       drawHRVTrend()
       showToast('Lettura HRV salvata')
       // keep results visible or auto close? keep for review
+    }
+
+    function getHRVContextAnswers() {
+      const answers = {}
+      // sleep
+      const sleepActive = document.querySelector('#ctx-sleep .ctx-btn.active')
+      if (sleepActive) answers.sleep_quality = parseInt(sleepActive.dataset.val)
+
+      // mental
+      const mentalActive = document.querySelector('#ctx-mental .ctx-btn.active')
+      if (mentalActive) answers.mental_energy = mentalActive.dataset.val
+
+      // fatigue
+      const fatActive = document.querySelector('#ctx-fatigue .ctx-btn.active')
+      if (fatActive) answers.fatigue = parseInt(fatActive.dataset.val)
+
+      // soreness
+      const sorActive = document.querySelector('#ctx-soreness .ctx-btn.active')
+      if (sorActive) answers.muscle_soreness = parseInt(sorActive.dataset.val)
+
+      // alcohol
+      const alcActive = document.querySelector('#ctx-alcohol .ctx-btn.active')
+      if (alcActive) answers.alcohol = alcActive.dataset.val
+
+      // travel
+      const travActive = document.querySelector('#ctx-travel .ctx-btn.active')
+      if (travActive) answers.traveling = travActive.dataset.val
+
+      // sick
+      const sickActive = document.querySelector('#ctx-sick .ctx-btn.active')
+      if (sickActive) answers.sickness = sickActive.dataset.val
+
+      // digestion
+      const digActive = document.querySelector('#ctx-digestion .ctx-btn.active')
+      if (digActive) answers.digestion = digActive.dataset.val
+
+      // mood
+      const moodActive = document.querySelector('#ctx-mood .ctx-btn.active')
+      if (moodActive) answers.mood = moodActive.dataset.val
+
+      // plants
+      const plantsActive = document.querySelector('#ctx-plants .ctx-btn.active')
+      if (plantsActive) answers.plants = plantsActive.dataset.val
+
+      // notes
+      const notes = document.getElementById('ctx-notes')
+      if (notes && notes.value.trim()) answers.notes = notes.value.trim()
+
+      return answers
+    }
+
+    function setupHRVContextForm() {
+      // clear previous
+      document.querySelectorAll('#hrv-context .ctx-btn').forEach(b => b.classList.remove('active'))
+      const notes = document.getElementById('ctx-notes')
+      if (notes) notes.value = ''
+
+      // attach click handlers (delegation on parent)
+      const container = document.getElementById('hrv-context')
+      if (!container) return
+      // remove old listeners by cloning? simple: use onclick inline style but since dynamic, attach once
+      if (container._ctxSetup) return
+      container._ctxSetup = true
+
+      container.addEventListener('click', (e) => {
+        const btn = e.target.closest('.ctx-btn')
+        if (!btn) return
+        const group = btn.parentElement
+        if (!group) return
+        // deselect siblings
+        group.querySelectorAll('.ctx-btn').forEach(b => b.classList.remove('active'))
+        btn.classList.add('active')
+      })
+    }
+
+    function clearHRVContextForm() {
+      const container = document.getElementById('hrv-context')
+      if (container) {
+        container.querySelectorAll('.ctx-btn').forEach(b => b.classList.remove('active'))
+        const notes = document.getElementById('ctx-notes')
+        if (notes) notes.value = ''
+      }
     }
 
     function computeBaselineRMSSD() {
@@ -1798,6 +2011,7 @@
           </div>
           <div class="flex items-center gap-x-2">
             <div class="text-[10px] px-1.5 py-px rounded bg-slate-800 text-slate-400">${r.duration}s ${q}</div>
+            ${r.context ? `<div class="text-[9px] text-slate-500">${r.context.sleep_quality ? '😴'+r.context.sleep_quality : ''}${r.context.alcohol && r.context.alcohol!=='no' ? '🍷' : ''}${r.context.plants==='yes' ? '🌿' : ''}</div>` : ''}
             <button data-idx="${idx}" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-rose-300">x</button>
           </div>`
         div.querySelector('button').onclick = (e) => {
