@@ -642,20 +642,26 @@
                 Per consumare via MCP in Lucia: aggiungi tool che querya Supabase con le tue credenziali (service role o OAuth).
               </div>
 
-              <div class="text-[9px] text-slate-400">SQL tabella (copia in Supabase SQL Editor):</div>
-              <pre class="text-[8px] bg-black p-1 rounded overflow-auto">CREATE TABLE hrv_readings (
-  ts bigint primary key,
-  user_id uuid references auth.users not null,
-  hr int, rmssd int, sdnn int,
-  duration int, mode text, valid boolean,
+              <div class="text-[9px] text-slate-400">SQL tabella (copia in Supabase SQL Editor o usa migration nel progetto tantra):</div>
+              <pre class="text-[8px] bg-black p-1 rounded overflow-auto">CREATE TABLE IF NOT EXISTS hrv_readings (
+  ts bigint PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users (id),
+  hr integer,
+  rmssd integer,
+  sdnn integer,
+  duration integer,
+  mode text,
+  valid boolean,
   context jsonb,
-  created_at timestamptz default now()
+  created_at timestamptz DEFAULT now()
 );
-alter table hrv_readings enable row level security;
-create policy "user owns data" on hrv_readings
-  for all to authenticated
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);</pre>
+ALTER TABLE hrv_readings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage their own HRV data" ON hrv_readings
+  FOR ALL TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+CREATE INDEX IF NOT EXISTS idx_hrv_user_ts ON hrv_readings (user_id, ts DESC);</pre>
+              <div class="text-[9px] text-emerald-400">Progetto tantra: https://qvsvlwfrnnwaufllxsbf.supabase.co (usa stesso Google auth). Unpause prima se INACTIVE, poi npx supabase db push dal dir tantra.</div>
             </div>
           </details>
           <div id="hrv-history" class="space-y-1.5 text-sm"></div>
@@ -2186,10 +2192,24 @@ create policy "user owns data" on hrv_readings
         const cfg = JSON.parse(localStorage.getItem('greece8_supabase') || '{}');
         const urlIn = document.getElementById('sb-url');
         const keyIn = document.getElementById('sb-anon-key');
-        if (urlIn && cfg.url) urlIn.value = cfg.url;
+        // Default to the Supabase project already used in the tantra project (for shared Google auth and MCP)
+        const defaultUrl = 'https://qvsvlwfrnnwaufllxsbf.supabase.co';
+        if (urlIn) {
+          urlIn.value = cfg.url || defaultUrl;
+        }
         if (keyIn && cfg.anonKey) keyIn.value = cfg.anonKey;
-        return cfg;
-      } catch { return {}; }
+        // Auto-save the default URL if not set
+        if (!cfg.url && urlIn && urlIn.value === defaultUrl) {
+          const newCfg = { ...cfg, url: defaultUrl };
+          localStorage.setItem('greece8_supabase', JSON.stringify(newCfg));
+        }
+        return { ...cfg, url: cfg.url || defaultUrl };
+      } catch { 
+        const defaultUrl = 'https://qvsvlwfrnnwaufllxsbf.supabase.co';
+        const urlIn = document.getElementById('sb-url');
+        if (urlIn) urlIn.value = defaultUrl;
+        return { url: defaultUrl };
+      }
     }
 
     function saveSupabaseConfigFromUI() {

@@ -28,6 +28,17 @@ Funziona completamente offline una volta aggiunto alla schermata Home.
 
 Per la fotocamera: copri completamente flash+lente con polpastrello, pressione leggera, 60-120s a riposo.
 
+### Integrazione Supabase (progetto tantra)
+L'app usa di default il Supabase del tuo progetto tantra (qvsvlwfrnnwaufllxsbf.supabase.co) per salvare HRV + context (le domande Council-style).
+
+- Configura URL (precompilato) + anon key (copia da Dashboard > API > anon public key).
+- Login con Google (stesso auth del tantra).
+- I dati finiscono con user_id per RLS sicura.
+- Per MCP in Lucia: i tool in pattern-server.ts leggono da questa tabella (setta SUPABASE_* env da .dev.vars del tantra).
+- Migration pronta in tantra/supabase/migrations/ per la tabella hrv_readings + RLS.
+
+Unpause il progetto se INACTIVE, poi `npx supabase db push` dal dir tantra per creare la tabella.
+
 ### Domande contestuali (nuovo)
 Dopo ogni misurazione HRV appare un questionario rapido in stile HRVTraining (sonno, fatica, alcol, viaggio, malattia, digestione, umore, piante...).
 
